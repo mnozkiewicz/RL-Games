@@ -8,3 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Vscode
+.Vscode
+.DS_Store
+
+# Notebooks
+**/*.ipynb
