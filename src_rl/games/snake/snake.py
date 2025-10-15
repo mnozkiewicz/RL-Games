@@ -12,7 +12,7 @@ class Snake:
         self._last_pos: Pos = Pos(x, y)
         self._board_size: int = board_size
 
-        self._board: NDArray[np.bool] = np.full((board_size, board_size), 0)
+        self._board: NDArray[np.int_] = np.full((board_size, board_size), 0)
         self._board[x, y] = 1
 
         self._dir = Dir.UP

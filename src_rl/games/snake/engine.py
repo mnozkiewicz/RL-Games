@@ -1,9 +1,40 @@
 import numpy as np
 from .utils import Pos, State, Action
 from .snake import Snake
+from ..base_game_engine import BaseGameEngine
+from ..colors import Color
+import pygame
 
 
-class SnakeGame:
+action_to_label = {Action.UP: 0, Action.DOWN: 1, Action.LEFT: 2, Action.RIGHT: 3}
+
+label_to_action = {v: k for k, v in action_to_label.items()}
+
+
+def key_to_action_map(event_type: pygame.event.Event) -> Action:
+    match event_type:
+        case pygame.K_UP | pygame.K_w:
+            return Action.UP
+        case pygame.K_DOWN | pygame.K_s:
+            return Action.DOWN
+        case pygame.K_LEFT | pygame.K_a:
+            return Action.LEFT
+        case pygame.K_RIGHT | pygame.K_d:
+            return Action.RIGHT
+        case _:
+            return Action.NOTHING
+
+
+def map_events(events: list[pygame.event.Event]) -> list[Action]:
+    actions: list[Action] = []
+    for event in events:
+        if event.type == pygame.KEYUP and (action := key_to_action_map(event.key)):
+            actions.append(action)
+
+    return actions
+
+
+class SnakeGame(BaseGameEngine):
     def __init__(self, board_size: int, infinite: bool = True):
         self.board_size: int = board_size
         self.infinte: bool = infinite
@@ -16,9 +47,9 @@ class SnakeGame:
         self._food: Pos
         self._state: State
 
-        self.reset_game()
+        self.reset()
 
-    def reset_game(self):
+    def reset(self):
         self.snake = Snake(self.board_size // 2, self.board_size // 2, self.board_size)
         self._current_state_index = 0
         self._last_computed_state = 0
@@ -26,6 +57,38 @@ class SnakeGame:
 
         self.draw_new_food()
         self._state = self._compute_state()
+
+    def parse_user_input(self, events: list[pygame.event.Event]) -> list[int]:
+        actions = map_events(events)
+        action_labels = [
+            action_to_label[action] for action in actions if action != Action.NOTHING
+        ]
+        return action_labels
+
+    def step(self, actions: list[int]):
+        self._current_state_index += 1
+
+        if actions:
+            action = actions[-1]
+            self.snake.turn(label_to_action[action].to_dir())
+
+        self.snake.move()
+        if self.snake.eat_food(self._food):
+            self.draw_new_food()
+
+        if self.snake.collision():
+            if not self.infinte:
+                self._running = False
+            else:
+                self.reset()
+
+    def get_state(self) -> State:
+        if self._last_computed_state < self._current_state_index:
+            self._state = self._compute_state()
+        return self._state
+
+    def is_running(self) -> bool:
+        return self.get_state().running
 
     def _compute_state(self) -> State:
         self._last_computed_state = self._current_state_index
@@ -39,36 +102,45 @@ class SnakeGame:
             self._running,
         )
 
-    def state(self) -> State:
-        if self._last_computed_state < self._current_state_index:
-            self._state = self._compute_state()
-        return self._state
-
     def draw_new_food(self) -> None:
         board = self.snake.board()
         vacant_places = board.size - board.sum().item()
 
         new_flattened_pos = np.random.randint(0, vacant_places)  # pyright: ignore
 
-        false_indices = np.where(~board.flatten())[0]
+        false_indices = np.where(board.flatten() == 0)[0]
         flat_index = false_indices[new_flattened_pos]
         row, col = np.unravel_index(flat_index, board.shape)
 
         self._food = Pos(row.item(), col.item())
 
-    def game_step(self, actions: list[Action]):
-        self._current_state_index += 1
+    def create_rect(
+        self, x: int, y: int, cell_width: int, cell_height: int
+    ) -> pygame.Rect:
+        return pygame.Rect(x * cell_width, y * cell_height, cell_width, cell_height)
 
-        if actions:
-            action = actions[-1]
-            self.snake.turn(action.to_dir())
+    def draw_state(self, screen: pygame.Surface):
+        state = self.get_state()
 
-        self.snake.move()
-        if self.snake.eat_food(self._food):
-            self.draw_new_food()
+        if not state.running:
+            screen.fill(Color.BLACK)
+            return
 
-        if self.snake.collision():
-            if not self.infinte:
-                self._running = False
-            else:
-                self.reset_game()
+        screen_width = screen.get_width()
+        screen_height = screen.get_height()
+
+        cell_width = screen_width // self.board_size
+        cell_height = screen_height // self.board_size
+
+        screen.fill(Color.WHITE)
+        for pos in state.tail:
+            rect = self.create_rect(pos.x, pos.y, cell_width, cell_height)
+            pygame.draw.rect(screen, Color.GREEN, rect)
+
+        head = state.head
+        rect = self.create_rect(head.x, head.y, cell_width, cell_height)
+        pygame.draw.rect(screen, Color.RED, rect)
+
+        food = state.food
+        rect = self.create_rect(food.x, food.y, cell_width, cell_height)
+        pygame.draw.rect(screen, Color.BLUE, rect)
