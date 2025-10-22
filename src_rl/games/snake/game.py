@@ -1,45 +1,17 @@
-from PIL import Image
 import numpy as np
 from .utils import Pos, State, Action
 from .snake import Snake
-from ..base_game import BaseGameEngine
-from ...utils.colors import Color
-import pygame
-from typing import Optional
-
-
-action_to_label = {Action.UP: 0, Action.DOWN: 1, Action.LEFT: 2, Action.RIGHT: 3}
-label_to_action = {v: k for k, v in action_to_label.items()}
+from ..base_game import BaseGame
 
 FOOD_REWARD = 30
 DEATH_REWARD = -300
 MOVE_REWARD = -1
 
-
-def key_to_action_map(event_type: pygame.event.Event) -> Action:
-    match event_type:
-        case pygame.K_UP | pygame.K_w:
-            return Action.UP
-        case pygame.K_DOWN | pygame.K_s:
-            return Action.DOWN
-        case pygame.K_LEFT | pygame.K_a:
-            return Action.LEFT
-        case pygame.K_RIGHT | pygame.K_d:
-            return Action.RIGHT
-        case _:
-            return Action.NOTHING
+action_to_label = {Action.UP: 0, Action.DOWN: 1, Action.LEFT: 2, Action.RIGHT: 3}
+label_to_action = {v: k for k, v in action_to_label.items()}
 
 
-def map_events(events: list[pygame.event.Event]) -> list[Action]:
-    actions: list[Action] = []
-    for event in events:
-        if event.type == pygame.KEYDOWN and (action := key_to_action_map(event.key)):
-            actions.append(action)
-
-    return actions
-
-
-class SnakeGame(BaseGameEngine):
+class SnakeGame(BaseGame):
     def __init__(self, board_size: int, infinite: bool = True):
         self.board_size: int = board_size
         self.infinte: bool = infinite
@@ -62,13 +34,6 @@ class SnakeGame(BaseGameEngine):
 
         self.draw_new_food()
         self._state = self._compute_state()
-
-    def parse_user_input(self, events: list[pygame.event.Event]) -> list[int]:
-        actions = map_events(events)
-        action_labels = [
-            action_to_label[action] for action in actions if action != Action.NOTHING
-        ]
-        return action_labels
 
     @property
     def number_of_moves(self) -> int:
@@ -100,33 +65,6 @@ class SnakeGame(BaseGameEngine):
             self._state = self._compute_state()
         return self._state
 
-    def game_screenshot(self, output_size: Optional[int] = None) -> Image.Image:
-        if output_size is not None and output_size <= 0:
-            raise ValueError(
-                f"`output_size should be a positive integer, given: {output_size}"
-            )
-
-        state = self.get_state()
-        size = state.board_size
-        screenshot = np.full((size, size, 3), fill_value=255, dtype=np.uint8)
-
-        for tail_pos in state.tail:
-            x, y = tail_pos
-            screenshot[x, y] = Color.GREEN
-
-        food_x, food_y = state.food
-        screenshot[food_x, food_y] = Color.BLUE
-
-        head_x, head_y = state.head
-        screenshot[head_x, head_y] = Color.RED
-
-        img = Image.fromarray(screenshot)
-        if output_size is None:
-            return img
-
-        img = img.resize((output_size, output_size), resample=Image.Resampling.NEAREST)
-        return img
-
     def is_running(self) -> bool:
         return self.get_state().running
 
@@ -153,37 +91,6 @@ class SnakeGame(BaseGameEngine):
         row, col = np.unravel_index(flat_index, board.shape)
 
         self._food = Pos(row.item(), col.item())
-
-    def create_rect(
-        self, x: int, y: int, cell_width: int, cell_height: int
-    ) -> pygame.Rect:
-        return pygame.Rect(x * cell_width, y * cell_height, cell_width, cell_height)
-
-    def draw_state(self, screen: pygame.Surface):
-        state = self.get_state()
-
-        if not state.running:
-            screen.fill(Color.BLACK)
-            return
-
-        screen_width = screen.get_width()
-        screen_height = screen.get_height()
-
-        cell_width = screen_width // self.board_size
-        cell_height = screen_height // self.board_size
-
-        screen.fill(Color.WHITE)
-        for pos in state.tail:
-            rect = self.create_rect(pos.x, pos.y, cell_width, cell_height)
-            pygame.draw.rect(screen, Color.GREEN, rect)
-
-        head = state.head
-        rect = self.create_rect(head.x, head.y, cell_width, cell_height)
-        pygame.draw.rect(screen, Color.RED, rect)
-
-        food = state.food
-        rect = self.create_rect(food.x, food.y, cell_width, cell_height)
-        pygame.draw.rect(screen, Color.BLUE, rect)
 
     def processed_state(self) -> np.ndarray:
         def get_local_window(state: State, window_size: int = 7):

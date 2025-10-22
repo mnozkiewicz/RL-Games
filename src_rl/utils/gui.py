@@ -1,10 +1,14 @@
 import pygame
 from .gui_config import GUIConfig
-from ..games.base_game import BaseGameEngine
+from ..games.base_game import BaseGame, GameType
+from ..games.base_renderer import BaseRenderer
 
 
 class GameGui:
-    def __init__(self, game: BaseGameEngine, config: GUIConfig):
+    def __init__(
+        self, renderer: BaseRenderer[GameType], game: BaseGame, config: GUIConfig
+    ):
+        self.renderer = renderer
         self.config = config
         self.game = game
 
@@ -35,10 +39,10 @@ class GameGui:
 
         while self.running:
             events = self.gather_events()
-            actions = self.game.parse_user_input(events)
+            actions = self.renderer.handle_events(events)
 
             _ = self.game.step(actions)
-            self.game.draw_state(self.screen)
+            self.renderer.draw(self.screen)
 
             pygame.display.flip()
 
