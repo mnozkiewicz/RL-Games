@@ -1,4 +1,4 @@
-from .gui_config import GUIConfig
-from .gui import GameGui
+from ..utils.gui_config import GUIConfig
+from ..utils.gui import GameGui
 
 __all__ = ["GUIConfig", "GameGui"]

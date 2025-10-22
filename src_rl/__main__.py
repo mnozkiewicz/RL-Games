@@ -1,4 +1,5 @@
-from games import GUIConfig, GameGui
+from utils.gui import GameGui
+from utils.gui_config import GUIConfig
 from games.snake.engine import SnakeGame
 
 
