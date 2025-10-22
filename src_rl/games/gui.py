@@ -1,3 +1,7 @@
+import os
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
 import pygame
 from .gui_config import GUIConfig
 from .base_game_engine import BaseGameEngine
@@ -36,7 +40,9 @@ class GameGui:
         while self.running:
             events = self.gather_events()
             actions = self.game.parse_user_input(events)
-            self.game.step(actions)
+
+            reward = self.game.step(actions)
+            print(reward)
             self.game.draw_state(self.screen)
 
             pygame.display.flip()

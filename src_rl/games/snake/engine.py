@@ -7,8 +7,11 @@ import pygame
 
 
 action_to_label = {Action.UP: 0, Action.DOWN: 1, Action.LEFT: 2, Action.RIGHT: 3}
-
 label_to_action = {v: k for k, v in action_to_label.items()}
+
+FOOD_REWARD = 10
+DEATH_REWARD = -100
+MOVE_REWARD = -1
 
 
 def key_to_action_map(event_type: pygame.event.Event) -> Action:
@@ -65,7 +68,7 @@ class SnakeGame(BaseGameEngine):
         ]
         return action_labels
 
-    def step(self, actions: list[int]):
+    def step(self, actions: list[int]) -> int:
         self._current_state_index += 1
 
         if actions:
@@ -75,12 +78,16 @@ class SnakeGame(BaseGameEngine):
         self.snake.move()
         if self.snake.eat_food(self._food):
             self.draw_new_food()
+            return FOOD_REWARD
 
-        if self.snake.collision():
+        elif self.snake.collision():
             if not self.infinte:
                 self._running = False
             else:
                 self.reset()
+            return DEATH_REWARD
+        else:
+            return MOVE_REWARD
 
     def get_state(self) -> State:
         if self._last_computed_state < self._current_state_index:
