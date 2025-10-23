@@ -40,8 +40,3 @@ class HumanPlayer(BasePlayer):
 
     def move(self, state: np.ndarray) -> int:
         return self.last_action
-
-    def learn(
-        self, state: np.ndarray, reward: float, new_state: np.ndarray, terminal: bool
-    ) -> None:
-        pass

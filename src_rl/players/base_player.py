@@ -10,8 +10,3 @@ class BasePlayer(ABC):
 
     @abstractmethod
     def move(self, state: np.ndarray) -> int: ...
-
-    @abstractmethod
-    def learn(
-        self, state: np.ndarray, reward: float, new_state: np.ndarray, terminal: bool
-    ) -> None: ...
