@@ -35,7 +35,7 @@ class BaseGame(ABC):
         ...
 
     @abstractmethod
-    def step(self, actions: list[int]) -> int:
+    def step(self, action_label: int) -> int:
         """
         Performs one time step of the game logic given a list of actions.
 

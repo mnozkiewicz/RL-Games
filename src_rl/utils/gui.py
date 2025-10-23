@@ -2,15 +2,22 @@ import pygame
 from .gui_config import GUIConfig
 from ..games.base_game import BaseGame, GameType
 from ..games.base_renderer import BaseRenderer
+from ..players.base_player import BasePlayer
+from ..players.event_handler import IEventHandler
 
 
 class GameGui:
     def __init__(
-        self, renderer: BaseRenderer[GameType], game: BaseGame, config: GUIConfig
+        self,
+        renderer: BaseRenderer[GameType],
+        game: BaseGame,
+        config: GUIConfig,
+        player: BasePlayer,
     ):
         self.renderer = renderer
         self.config = config
         self.game = game
+        self.player = player
 
         self.screen: pygame.Surface
         self.clock: pygame.time.Clock
@@ -37,15 +44,19 @@ class GameGui:
         pygame.display.set_caption("Snake")
         self.clock = pygame.time.Clock()
 
+        state = self.game.processed_state()
+
         while self.running:
             events = self.gather_events()
-            actions = self.renderer.handle_events(events)
+            if isinstance(self.player, IEventHandler):
+                self.player.handle_events(events)
 
-            _ = self.game.step(actions)
+            action = self.player.move(state)
+            _ = self.game.step(action)
+            state = self.game.processed_state()
+
             self.renderer.draw(self.screen)
-
             pygame.display.flip()
-
             self.clock.tick(self.config.frame_rate)
             self.running = self.running and self.game.is_running()
 

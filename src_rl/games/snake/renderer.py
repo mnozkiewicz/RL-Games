@@ -1,35 +1,10 @@
 import pygame
-from pygame.event import Event
 from ...utils.colors import Color
-from .game import SnakeGame, action_to_label
+from .game import SnakeGame
 from ..base_renderer import BaseRenderer
 from PIL import Image
 from typing import Optional
 import numpy as np
-from .utils import Action
-
-
-def key_to_action_map(event_type: pygame.event.Event) -> Action:
-    match event_type:
-        case pygame.K_UP | pygame.K_w:
-            return Action.UP
-        case pygame.K_DOWN | pygame.K_s:
-            return Action.DOWN
-        case pygame.K_LEFT | pygame.K_a:
-            return Action.LEFT
-        case pygame.K_RIGHT | pygame.K_d:
-            return Action.RIGHT
-        case _:
-            return Action.NOTHING
-
-
-def map_events(events: list[pygame.event.Event]) -> list[Action]:
-    actions: list[Action] = []
-    for event in events:
-        if event.type == pygame.KEYDOWN and (action := key_to_action_map(event.key)):
-            actions.append(action)
-
-    return actions
 
 
 class SnakeRenderer(BaseRenderer[SnakeGame]):
@@ -96,10 +71,3 @@ class SnakeRenderer(BaseRenderer[SnakeGame]):
 
         img = img.resize((output_size, output_size), resample=Image.Resampling.NEAREST)
         return img
-
-    def handle_events(self, events: list[Event]) -> list[int]:
-        actions = map_events(events)
-        action_labels = [
-            action_to_label[action] for action in actions if action != Action.NOTHING
-        ]
-        return action_labels

@@ -7,8 +7,13 @@ FOOD_REWARD = 30
 DEATH_REWARD = -300
 MOVE_REWARD = -1
 
-action_to_label = {Action.UP: 0, Action.DOWN: 1, Action.LEFT: 2, Action.RIGHT: 3}
-label_to_action = {v: k for k, v in action_to_label.items()}
+label_to_action = {
+    -1: Action.NOTHING,
+    0: Action.UP,
+    1: Action.DOWN,
+    2: Action.LEFT,
+    3: Action.RIGHT,
+}
 
 
 class SnakeGame(BaseGame):
@@ -39,12 +44,13 @@ class SnakeGame(BaseGame):
     def number_of_moves(self) -> int:
         return 4
 
-    def step(self, actions: list[int]) -> int:
+    def step(self, action_label: int) -> int:
         self._current_state_index += 1
 
-        if actions:
-            action = actions[-1]
-            self.snake.turn(label_to_action[action].to_dir())
+        action = label_to_action[action_label]
+
+        if action != Action.NOTHING:
+            self.snake.turn(action.to_dir())
 
         self.snake.move()
         if self.snake.eat_food(self._food):
