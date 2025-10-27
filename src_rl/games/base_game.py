@@ -12,6 +12,9 @@ class BaseGame(ABC):
     with the RL engine, renderers, and other components.
     """
 
+    def __init__(self) -> None:
+        super().__init__()
+
     @abstractmethod
     def reset(self):
         """

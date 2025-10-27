@@ -11,4 +11,4 @@ class AIPlayer(BasePlayer):
         self.agent = agent
 
     def move(self, state: np.ndarray) -> int:
-        return self.agent.get_action(state)
+        return self.agent.choose_action(state)

@@ -7,6 +7,7 @@ from .base_game import GameType
 
 class BaseRenderer(ABC, Generic[GameType]):
     def __init__(self, game: GameType):
+        super().__init__()
         self.game = game
 
     @abstractmethod

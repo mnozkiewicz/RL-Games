@@ -15,12 +15,13 @@ class BaseAgent(ABC):
             action_space_size (int): The number of discrete actions available.
             state_space_shape (Tuple[int, ...]): The shape of the state array.
         """
+        super().__init__()
         self.state_space_shape = state_space_shape
         self.action_space_size = action_space_size
-        self.is_eval_mode = False
+        self.eval_mode = False
 
     @abstractmethod
-    def get_action(self, state: np.ndarray) -> int:
+    def choose_action(self, state: np.ndarray) -> int:
         """
         Gets an action for a given state during training.
         This may include exploration (e.g., epsilon-greedy).
@@ -43,7 +44,7 @@ class BaseAgent(ABC):
         Returns:
             int: The optimal action to take.
         """
-        return self.get_action(state)
+        return self.choose_action(state)
 
     @abstractmethod
     def learn(
@@ -65,7 +66,11 @@ class BaseAgent(ABC):
         """
         ...
 
-    # def set_evaluation_mode(self, is_eval: bool):
+    @abstractmethod
+    def set_eval_mode(self): ...
+
+    @abstractmethod
+    def set_train_mode(self): ...
 
     # def save_model(self, path: str):
 

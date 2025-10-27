@@ -5,6 +5,7 @@ import numpy as np
 
 class BasePlayer(ABC):
     def __init__(self, game: BaseGame):
+        super().__init__()
         self.game = game
         self.number_of_moves = self.game.number_of_moves
 
