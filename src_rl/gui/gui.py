@@ -41,7 +41,7 @@ class GameGui:
             (self.config.pixel_height, self.config.pixel_height)
         )
 
-        pygame.display.set_caption("Snake")
+        pygame.display.set_caption(self.game.name())
         self.clock = pygame.time.Clock()
 
         state = self.game.processed_state()

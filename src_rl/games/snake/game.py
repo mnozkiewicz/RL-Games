@@ -3,7 +3,7 @@ from .utils import Pos, State, Action
 from .snake import Snake
 from ..base_game import BaseGame
 
-FOOD_REWARD = 30
+FOOD_REWARD = 50
 DEATH_REWARD = -300
 MOVE_REWARD = -1
 
@@ -43,6 +43,9 @@ class SnakeGame(BaseGame):
     @property
     def number_of_moves(self) -> int:
         return 4
+
+    def name(self) -> str:
+        return "SNAKE"
 
     def step(self, action_label: int) -> int:
         self._current_state_index += 1

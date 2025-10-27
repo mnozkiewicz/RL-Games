@@ -1,5 +1,5 @@
 import pygame
-from ...utils.colors import Color
+from src_rl.utils.colors import Color
 from .game import SnakeGame
 from ..base_renderer import BaseRenderer
 from PIL import Image

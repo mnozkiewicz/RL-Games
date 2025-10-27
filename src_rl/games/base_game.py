@@ -71,5 +71,14 @@ class BaseGame(ABC):
         """
         ...
 
+    @abstractmethod
+    def name(self) -> str:
+        """
+        Returns the game's name to be displayed
+        Returns:
+            str: name of the game
+        """
+        ...
+
 
 GameType = TypeVar("GameType", bound=BaseGame)
