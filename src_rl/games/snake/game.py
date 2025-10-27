@@ -48,6 +48,9 @@ class SnakeGame(BaseGame):
         return "SNAKE"
 
     def step(self, action_label: int) -> int:
+        if not self._running:
+            return DEATH_REWARD
+
         self._current_state_index += 1
 
         action = label_to_action[action_label]
