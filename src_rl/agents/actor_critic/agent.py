@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 import numpy as np
+from typing import Optional, Any, Type
 from .trajectory_buffer import TrajectoryBuffer
 from ..base_agent import BaseAgent
 
@@ -12,12 +13,13 @@ class ActorCriticController(BaseAgent, nn.Module):
         self,
         state_space_shape: int,
         action_space_size: int,
-        batch_size: int,
         actor: nn.Module,
         critic: nn.Module,
-        learning_rate: float = 0.00001,
+        batch_size: int = 64,
         discount_factor: float = 0.99,
         device: str = "cpu",
+        optimizer: Optional[Type[optim.Optimizer]] = None,
+        optimizer_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
         super().__init__(state_space_shape, action_space_size)
 
@@ -28,7 +30,14 @@ class ActorCriticController(BaseAgent, nn.Module):
         self.model = nn.ModuleDict({"actor": actor, "critic": critic}).to(device)
 
         self._check_network_dimensions(state_space_shape, action_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
+
+        if optimizer_kwargs is None:
+            optimizer_kwargs = {}
+
+        if optimizer is None:
+            self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
+        else:
+            self.optimizer = optimizer(self.model.parameters(), **optimizer_kwargs)
 
     def _check_network_dimensions(self, input_size: int, output_size: int) -> None:
         dummy_input = torch.zeros(
