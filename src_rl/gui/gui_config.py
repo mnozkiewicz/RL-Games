@@ -3,6 +3,11 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class GUIConfig:
+    """
+    Basic parameters for a GUI window.
+    Includes height of the window, width and also the frame rate (per minute)
+    """
+
     pixel_height: int = 600
     pixel_width: int = 600
     frame_rate: int = 10

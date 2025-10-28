@@ -1,45 +1,23 @@
-import torch
-import torch.nn as nn
 from torch import optim
 from ..agents.actor_critic import ActorCriticController
 import numpy as np
 import matplotlib.pyplot as plt
 from ..games.snake.game import SnakeGame
 from tqdm import tqdm
+from pathlib import Path
+
+
+def current_path() -> Path:
+    current_file_dir = Path(__file__).parent
+    return current_file_dir
 
 
 def main() -> None:
-    actor = nn.Sequential(
-        nn.Linear(61, 1024),
-        nn.ReLU(),
-        nn.LayerNorm(1024),
-        nn.Linear(1024, 512),
-        nn.ReLU(),
-        nn.LayerNorm(512),
-        nn.Linear(512, 256),
-        nn.ReLU(),
-        nn.Linear(256, 4),
-        nn.Softmax(dim=1),
-    )
-
-    critic = nn.Sequential(
-        nn.Linear(61, 1024),
-        nn.ReLU(),
-        nn.LayerNorm(1024),
-        nn.Linear(1024, 512),
-        nn.ReLU(),
-        nn.LayerNorm(512),
-        nn.Linear(512, 256),
-        nn.ReLU(),
-        nn.Linear(256, 1),
-    )
-
     controller = ActorCriticController(
         state_space_shape=61,
         action_space_size=4,
         batch_size=64,
-        actor=actor,
-        critic=critic,
+        hidden_layer_sizes=(1024, 512, 256),
         discount_factor=0.99,
         device="cpu",
         optimizer=optim.AdamW,
@@ -53,6 +31,8 @@ def main() -> None:
 
     past_rewards: list[float] = []
     past_lengths: list[int] = []
+
+    current_dir = current_path()
 
     for i_episode in tqdm(range(num_episodes)):
         snake_game.reset()
@@ -110,10 +90,10 @@ def main() -> None:
 
                 plt.title("Moving Average of Reward and Snake Length")
                 fig.tight_layout()
-                plt.savefig(f"learning_{i_episode}.png")
+                plt.savefig(current_dir / f"plots/learning_{i_episode}.png")
                 plt.close()
 
-    torch.save(controller.to("cpu"), "controller.pt")
+    controller.save_model(str(current_dir / "controller.pt"))
 
 
 if __name__ == "__main__":

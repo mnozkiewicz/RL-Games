@@ -1,9 +1,11 @@
 import torch
+import os
+import json
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 import numpy as np
-from typing import Optional, Any, Type
+from typing import Optional, Any, Type, Tuple, List, Dict
 from .trajectory_buffer import TrajectoryBuffer
 from ..base_agent import BaseAgent
 
@@ -13,8 +15,7 @@ class ActorCriticController(BaseAgent, nn.Module):
         self,
         state_space_shape: int,
         action_space_size: int,
-        actor: nn.Module,
-        critic: nn.Module,
+        hidden_layer_sizes: Tuple[int, ...] = (256, 256),
         batch_size: int = 64,
         discount_factor: float = 0.99,
         device: str = "cpu",
@@ -23,13 +24,14 @@ class ActorCriticController(BaseAgent, nn.Module):
     ) -> None:
         super().__init__(state_space_shape, action_space_size)
 
+        self.hidden_layer_sizes = hidden_layer_sizes
         self.discount_factor = discount_factor
         self.device = device
         self.trajectory_buffer = TrajectoryBuffer(batch_size)
 
-        self.model = nn.ModuleDict({"actor": actor, "critic": critic}).to(device)
-
-        self._check_network_dimensions(state_space_shape, action_space_size)
+        self.model = self._create_networks(
+            state_space_shape, hidden_layer_sizes, action_space_size
+        ).to(device)
 
         if optimizer_kwargs is None:
             optimizer_kwargs = {}
@@ -39,38 +41,47 @@ class ActorCriticController(BaseAgent, nn.Module):
         else:
             self.optimizer = optimizer(self.model.parameters(), **optimizer_kwargs)
 
-    def _check_network_dimensions(self, input_size: int, output_size: int) -> None:
-        dummy_input = torch.zeros(
-            10, input_size, device=self.device, dtype=torch.float32
-        )
+    def _create_networks(
+        self, input_size: int, hidden_layer_sizes: Tuple[int, ...], output_size: int
+    ) -> nn.ModuleDict:
+        # --- Build Actor Network ---
+        actor_layers: List[nn.Module] = []
+        in_features = input_size
 
-        try:
-            with torch.no_grad():
-                actor_output = self.model["actor"](dummy_input)
-                critic_output = self.model["critic"](dummy_input)
-        except Exception as e:
-            raise RuntimeError(
-                f"Error when running dummy input through actor/critic networks: {e}"
-                f"Possibly missmatch involving the `input_state_dim` or `number of actions`"
-            )
+        # Add hidden layers
+        for hidden_size in hidden_layer_sizes:
+            actor_layers.append(nn.Linear(in_features, hidden_size))
+            actor_layers.append(nn.LayerNorm(hidden_size))
+            actor_layers.append(nn.ReLU())
+            in_features = hidden_size  # Update in_features for the next layer
 
-        # Actor should output (batch_size, number_of_actions)
-        if actor_output.shape != (10, output_size):
-            raise ValueError(
-                f"Actor network output shape {actor_output.shape} does not match "
-                f"expected (1, {output_size}). "
-                f"Check the final layer of your actor network."
-            )
+        # Add output layer
+        actor_layers.append(nn.Linear(in_features, output_size))
+        actor_layers.append(nn.Softmax(dim=-1))  # Outputs a probability distribution
 
-        # Critic should output (batch_size, 1)
-        if critic_output.shape != (10, 1):
-            raise ValueError(
-                f"Critic network output shape {critic_output.shape} does not match (1, 1). "
-                f"Check the final layer of your critic network."
-            )
+        actor = nn.Sequential(*actor_layers)
+
+        # --- Build Critic Network ---
+        critic_layers: List[nn.Module] = []
+        in_features = input_size
+
+        # Add hidden layers
+        for hidden_size in hidden_layer_sizes:
+            critic_layers.append(nn.Linear(in_features, hidden_size))
+            actor_layers.append(nn.LayerNorm(hidden_size))
+            critic_layers.append(nn.ReLU())
+            in_features = hidden_size  # Update in_features for the next layer
+
+        # Add output layer
+        critic_layers.append(nn.Linear(in_features, 1))  # Outputs a single value
+        critic = nn.Sequential(*critic_layers)
+
+        return nn.ModuleDict({"actor": actor, "critic": critic})
 
     def choose_action(self, state: np.ndarray) -> int:
-        state_tensor = torch.tensor(state.flatten()).reshape(1, -1).to(self.device)
+        state_tensor = (
+            torch.tensor(state).reshape(1, self.state_space_shape).to(self.device)
+        )
 
         with torch.no_grad():
             probs = self.model["actor"](state_tensor)
@@ -152,3 +163,45 @@ class ActorCriticController(BaseAgent, nn.Module):
     def set_train_mode(self):
         self.train()
         self.eval_mode = False
+
+    def save_model(self, path: str):
+        """Saves the model's weights and its configuration."""
+        print(f"Saving model to {path}...")
+        # 1. Create directory if it doesn't exist
+        os.makedirs(path, exist_ok=True)
+
+        # 2. Save model configuration
+        config: Dict[str, Any] = {
+            "state_space_shape": self.state_space_shape,
+            "action_space_size": self.action_space_size,
+            "hidden_layer_sizes": list(self.hidden_layer_sizes),
+        }
+
+        with open(os.path.join(path, "config.json"), "w") as f:
+            json.dump(config, f)
+
+        # 3. Save model weights
+        torch.save(self.model.to("cpu").state_dict(), os.path.join(path, "model.pth"))
+
+    @classmethod
+    def load_model(cls, path: str, device: str = "cpu"):
+        """Loads a model from a saved configuration and weights."""
+        print(f"Loading model from {path}...")
+
+        # 1. Load model configuration
+        with open(os.path.join(path, "config.json"), "r") as f:
+            config = json.load(f)
+
+        # 2. Re-create the agent with the loaded config
+        # We must convert shape from list (JSON) to tuple
+        config["hidden_layer_sizes"] = tuple(config["hidden_layer_sizes"])
+        agent = cls(device=device, **config)
+
+        # 3. Load model weights
+        weights_path = os.path.join(path, "model.pth")
+        agent.model.load_state_dict(
+            torch.load(weights_path, map_location=torch.device(device))
+        )
+
+        print("Model loaded successfully.")
+        return agent

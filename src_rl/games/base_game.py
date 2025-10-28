@@ -8,8 +8,7 @@ class BaseGame(ABC):
     An abstract base class (ABC) defining the interface for all game environments.
 
     All games used in this reinforcement learning project must inherit from
-    this class and implement its abstract methods. This ensures compatibility
-    with the RL engine, renderers, and other components.
+    this class and implement its abstract methods.
     """
 
     def __init__(self) -> None:
@@ -31,9 +30,6 @@ class BaseGame(ABC):
     def number_of_moves(self) -> int:
         """
         Gets the total number of possible distinct actions in the game.
-
-        Returns:
-            int: The size of the action space (e.g., 4 for Up, Down, Left, Right).
         """
         ...
 
@@ -41,14 +37,7 @@ class BaseGame(ABC):
     def step(self, action_label: int) -> int:
         """
         Performs one time step of the game logic given a list of actions.
-
-        Args:
-            actions (list[int]): A list of actions to be taken in this step.
-                The interpretation of this list is game-specific
-                (e.g., one action per player, or a set of simultaneous actions).
-
-        Returns:
-            int: The reward (or score change) obtained from performing the action(s).
+        Returns the reward (or score change) obtained from performing the action(s).
         """
         ...
 
@@ -56,10 +45,6 @@ class BaseGame(ABC):
     def is_running(self) -> bool:
         """
         Checks if the game is still in progress.
-
-        Returns:
-            bool: True if the game is running (episode is not finished),
-                  False if the game is over (e.g., player died, game won).
         """
         ...
 
@@ -67,10 +52,6 @@ class BaseGame(ABC):
     def processed_state(self) -> np.ndarray:
         """
         Gets the current state of the game, processed for the neural network.
-
-        Returns:
-            np.ndarray: A numerical representation of the game state,
-                suitable for input into a model.
         """
         ...
 
@@ -78,8 +59,6 @@ class BaseGame(ABC):
     def name(self) -> str:
         """
         Returns the game's name to be displayed
-        Returns:
-            str: name of the game
         """
         ...
 

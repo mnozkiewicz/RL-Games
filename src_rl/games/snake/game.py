@@ -4,7 +4,7 @@ from .snake import Snake
 from ..base_game import BaseGame
 
 FOOD_REWARD = 50
-DEATH_REWARD = -300
+DEATH_REWARD = -500
 MOVE_REWARD = -1
 
 label_to_action = {

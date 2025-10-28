@@ -6,6 +6,13 @@ from .base_game import GameType
 
 
 class BaseRenderer(ABC, Generic[GameType]):
+    """
+    An abstract base class (ABC) for a game renderer.
+
+    Its main job is to draw the game state onto a pygame `Surface`.
+    It can also save the current game state to a picture.
+    """
+
     def __init__(self, game: GameType):
         super().__init__()
         self.game = game
