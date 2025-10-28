@@ -72,10 +72,6 @@ class Action(Enum):
             case _:
                 return None
 
-    @staticmethod
-    def move_actions() -> list["Action"]:
-        return [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]
-
 
 @dataclass
 class State:

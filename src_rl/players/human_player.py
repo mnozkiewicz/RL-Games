@@ -38,6 +38,8 @@ class HumanPlayer(BasePlayer):
         if len(actions) > 0:
             # If multiple keys were pressed, take the last one.
             self.last_action = actions[-1]
+        else:
+            self.last_action = -1
 
     def move(self, state: np.ndarray) -> int:
         """
