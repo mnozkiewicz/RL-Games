@@ -2,12 +2,13 @@ from torch import optim
 from ..agents.actor_critic import ActorCriticController
 from ..agents.base_agent import BaseAgent
 from ..games.base_game import BaseGame
+from ..games.snake.game import SnakeGame
 import numpy as np
 import matplotlib.pyplot as plt
-from ..games.snake.game import SnakeGame
-from tqdm import tqdm
+from typing import List
 from pathlib import Path
 import argparse
+from tqdm import tqdm
 
 
 def get_current_dir_path() -> Path:
@@ -16,8 +17,8 @@ def get_current_dir_path() -> Path:
 
 
 def plot_metrics(
-    past_rewards: list[float],
-    past_scores: list[int],
+    past_rewards: List[float],
+    past_scores: List[int],
     window_size: int,
     current_dir: Path,
     episode_number: int,
@@ -60,8 +61,8 @@ def train(
     graph_plotting_step: int = 25,
     window_size: int = 10,  # To smooth out the reward plot
 ) -> BaseAgent:
-    past_rewards: list[float] = []
-    past_scores: list[int] = []
+    past_rewards: List[float] = []
+    past_scores: List[int] = []
 
     current_dir = get_current_dir_path()
 

@@ -30,7 +30,7 @@ class HumanPlayer(BasePlayer):
                     actions.append(action)
         return actions
 
-    def handle_events(self, events: list[Event]) -> None:
+    def handle_events(self, events: List[Event]) -> None:
         """
         Scans pygame events for key presses and updates the last action.
         """
