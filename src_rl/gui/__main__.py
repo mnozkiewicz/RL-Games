@@ -2,9 +2,12 @@ import argparse
 from pathlib import Path
 from typing import Tuple, Dict
 
+# Abstract interfaces
+from ..players.base_player import BasePlayer
 from ..games.base_game import BaseGame
 from ..games.base_renderer import BaseRenderer
 
+# Pygame GUI
 from .gui import GameGui
 from .gui_config import GUIConfig
 
@@ -101,7 +104,7 @@ def main() -> None:
     # Player setup
     print(f"Starting game {args.game} as {args.player}")
 
-    player: HumanPlayer | AIPlayer
+    player: BasePlayer
     if args.player == "human":
         player = HumanPlayer(game=game, key_map=key_map)
     else:
