@@ -1,6 +1,7 @@
-☐ Refactor the snake code
-☐ Finish the flappy bird
+☐ Improve argparser for training run
+☐ Add seperate logger class to training
 ☐ Add ability to pass custom rewards
-☐ Add logger to training
+☐ Add slider with frame rate to pygame window
+☐ Finish the flappy bird
+☐ Refactor the snake code
 ☐ Implement DQN agent
-

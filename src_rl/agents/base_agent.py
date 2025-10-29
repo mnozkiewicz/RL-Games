@@ -10,10 +10,7 @@ class BaseAgent(ABC):
     def __init__(self, state_space_shape: int, action_space_size: int):
         """
         Initializes the agent.
-
-        Args:
-            action_space_size (int): The number of discrete actions available.
-            state_space_shape (Tuple[int, ...]): The shape of the state array.
+        The agent is by default set to training mode.
         """
         super().__init__()
         self.state_space_shape = state_space_shape
@@ -23,28 +20,10 @@ class BaseAgent(ABC):
     @abstractmethod
     def choose_action(self, state: np.ndarray) -> int:
         """
-        Gets an action for a given state during training.
-        This may include exploration (e.g., epsilon-greedy).
-
-        Args:
-            state (np.ndarray): The current game state.
-
-        Returns:
-            int: The action to take.
+        Gets an action for a given state. Function used during training,
+        but also during evaluation, if self.eval_mode is set tu True
         """
         ...
-
-    def get_optimal_action(self, state: np.ndarray) -> int:
-        """
-        Gets the best possible action for a given state during evaluation.
-        This should be deterministic, with no exploration.
-        Args:
-            state (np.ndarray): The current game state.
-
-        Returns:
-            int: The optimal action to take.
-        """
-        return self.choose_action(state)
 
     @abstractmethod
     def learn(
@@ -57,12 +36,8 @@ class BaseAgent(ABC):
     ):
         """
         Performs a learning step based on a transition.
-        Args:
-            state (np.ndarray): The state before the action.
-            action (int): The action taken.
-            reward (int): The reward received.
-            next_state (np.ndarray): The state after the action.
-            done (bool): Whether the episode finished.
+        A transition is a typical SARSA tuple (state, action, reward, next_state),
+        and also information wheter the ended the game.
         """
         ...
 
@@ -72,6 +47,9 @@ class BaseAgent(ABC):
     @abstractmethod
     def set_train_mode(self): ...
 
-    # def save_model(self, path: str):
+    @abstractmethod
+    def save_model(self, path: str): ...
 
-    # def load_model(self, path: str):
+    @classmethod
+    @abstractmethod
+    def load_model(cls, path: str, device: str = "cpu") -> "BaseAgent": ...

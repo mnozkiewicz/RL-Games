@@ -62,5 +62,12 @@ class BaseGame(ABC):
         """
         ...
 
+    @abstractmethod
+    def score(self) -> int:
+        """
+        Get current game's score
+        """
+        ...
 
-GameType = TypeVar("GameType", bound=BaseGame)
+
+GameType = TypeVar("GameType", bound=BaseGame, covariant=True)

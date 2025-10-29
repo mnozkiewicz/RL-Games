@@ -11,12 +11,17 @@ from ..base_agent import BaseAgent
 
 
 class ActorCriticController(BaseAgent, nn.Module):
+    """
+    Actor-Critic agent for reinforcement learning.
+    """
+
     def __init__(
         self,
         state_space_shape: int,
         action_space_size: int,
         hidden_layer_sizes: Tuple[int, ...] = (256, 256),
         batch_size: int = 64,
+        epsilon: float = 0.00,  # Exploration factor for epsilon-greedy
         discount_factor: float = 0.99,
         device: str = "cpu",
         optimizer: Optional[Type[optim.Optimizer]] = None,
@@ -24,18 +29,23 @@ class ActorCriticController(BaseAgent, nn.Module):
     ) -> None:
         super().__init__(state_space_shape, action_space_size)
 
+        # Agent hyperparameters
         self.hidden_layer_sizes = hidden_layer_sizes
         self.discount_factor = discount_factor
         self.device = device
+        self.epsilon = epsilon
+
+        # Buffer to store trajectories before batch updates
         self.trajectory_buffer = TrajectoryBuffer(batch_size)
 
+        # Create actor and critic networks
         self.model = self._create_networks(
             state_space_shape, hidden_layer_sizes, action_space_size
         ).to(device)
 
+        # Set optimizer
         if optimizer_kwargs is None:
             optimizer_kwargs = {}
-
         if optimizer is None:
             self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
         else:
@@ -44,41 +54,46 @@ class ActorCriticController(BaseAgent, nn.Module):
     def _create_networks(
         self, input_size: int, hidden_layer_sizes: Tuple[int, ...], output_size: int
     ) -> nn.ModuleDict:
-        # --- Build Actor Network ---
+        """
+        Create actor and critic networks.
+        Actor outputs a probability distribution over actions.
+        Critic outputs a single value estimate of the state.
+        """
+
+        # Actor
         actor_layers: List[nn.Module] = []
         in_features = input_size
 
-        # Add hidden layers
         for hidden_size in hidden_layer_sizes:
             actor_layers.append(nn.Linear(in_features, hidden_size))
-            actor_layers.append(nn.LayerNorm(hidden_size))
+            actor_layers.append(nn.LayerNorm(hidden_size))  # Normalize activations
             actor_layers.append(nn.ReLU())
-            in_features = hidden_size  # Update in_features for the next layer
+            in_features = hidden_size
 
-        # Add output layer
         actor_layers.append(nn.Linear(in_features, output_size))
-        actor_layers.append(nn.Softmax(dim=-1))  # Outputs a probability distribution
+        actor_layers.append(nn.Softmax(dim=-1))  # Probability distribution over actions
 
         actor = nn.Sequential(*actor_layers)
 
-        # --- Build Critic Network ---
+        # Critic Network
         critic_layers: List[nn.Module] = []
         in_features = input_size
 
-        # Add hidden layers
         for hidden_size in hidden_layer_sizes:
             critic_layers.append(nn.Linear(in_features, hidden_size))
-            actor_layers.append(nn.LayerNorm(hidden_size))
+            actor_layers.append(nn.LayerNorm(hidden_size))  # LayerNorm for stability
             critic_layers.append(nn.ReLU())
-            in_features = hidden_size  # Update in_features for the next layer
+            in_features = hidden_size
 
-        # Add output layer
-        critic_layers.append(nn.Linear(in_features, 1))  # Outputs a single value
+        critic_layers.append(nn.Linear(in_features, 1))  # Single value estimate
         critic = nn.Sequential(*critic_layers)
 
         return nn.ModuleDict({"actor": actor, "critic": critic})
 
     def choose_action(self, state: np.ndarray) -> int:
+        """
+        Choose an action given a state.
+        """
         state_tensor = (
             torch.tensor(state).reshape(1, self.state_space_shape).to(self.device)
         )
@@ -87,18 +102,26 @@ class ActorCriticController(BaseAgent, nn.Module):
             probs = self.model["actor"](state_tensor)
 
         if self.eval_mode:
-            # Deterministic (greedy) action
+            # Greedy action for evaluation
             action = torch.argmax(probs, dim=1)
             return int(action.item())
         else:
-            # Stochastic (sampling) action
+            # Apply epsilon-greedy exploration if epsilon > 0
+            if self.epsilon > 0:
+                probs = probs * (1 - self.epsilon) + self.epsilon / float(
+                    probs.view(-1).shape[0]
+                )
+
+            # Sample action from the categorical distribution
             distribution = Categorical(probs=probs)
             action = distribution.sample()
-            self.log_prob = distribution.log_prob(action)
             return int(action.item())
 
     @torch.no_grad()
     def evaluate_state(self, state: torch.Tensor) -> torch.Tensor:
+        """
+        Estimate the value of a state using the critic network.
+        """
         expected_reward = self.model["critic"](state)
         return expected_reward.detach()
 
@@ -110,50 +133,62 @@ class ActorCriticController(BaseAgent, nn.Module):
         next_state: np.ndarray,
         terminal: bool,
     ) -> None:
+        """
+        Store a transition in the trajectory buffer.
+        Once the buffer is full, update actor and critic networks.
+        """
+
+        # Store transition
         self.trajectory_buffer.store(state, action, reward, next_state, terminal)
 
         if self.trajectory_buffer.is_full():
+            # Retrieve batch from buffer
             states, actions, rewards, next_states, dones = (
                 self.trajectory_buffer.get_batch()
             )
 
-            # Numpy to tensor conversions
+            # Convert to tensors
             states_tensor = torch.tensor(states).to(self.device)
             next_states_tensor = torch.tensor(next_states).to(self.device)
             rewards_tensor = torch.tensor(rewards.reshape(rewards.shape[0], 1)).to(
                 self.device
             )
+            actions_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
 
-            # Clear all gradients
+            # Reset gradients
             self.optimizer.zero_grad()
 
-            # Critic
+            # Critic state value estimation before taking an action
             critics_evaluation: torch.Tensor = self.model["critic"](states_tensor)
+
+            # Critic state value estimation after taking an action and receiving reward
+            # Uses bootstraping
             remaining_reward = self.discount_factor * self.evaluate_state(
                 next_states_tensor
             )
-            remaining_reward[dones] = 0.0
+            remaining_reward[dones] = 0.0  # Zero out terminal states
 
-            # Actor
+            # Compute log probabilities
             probs = self.model["actor"](states_tensor)
             distribution = Categorical(probs=probs)
-            actions_tensor: torch.Tensor = torch.tensor(
-                actions, dtype=torch.long, device=self.device
-            )
-            log_probs: torch.Tensor = distribution.log_prob(actions_tensor)  # type: ignore
+            log_probs: Any = distribution.log_prob(actions_tensor)  # type: ignore
 
             if not isinstance(log_probs, torch.Tensor):
                 raise RuntimeError("Error while computing the distribution")
 
-            # Cost function
+            # Computing difference between critics_evaluation and bootstrapped evaluation
             difference = rewards_tensor + remaining_reward - critics_evaluation
-            critics_loss = difference.square()
-            actors_loss = -difference.detach() * log_probs.reshape(-1, 1)
+            critics_loss = difference.square()  # MSE for critic
+            actors_loss = -difference.detach() * log_probs.reshape(
+                -1, 1
+            )  # Policy gradient
 
+            # Backpropagate combined loss (averaged out over batch)
             total_loss = (critics_loss + actors_loss).mean()
             total_loss.backward()
             self.optimizer.step()
 
+            # Clear buffer after update
             self.trajectory_buffer.clear()
 
     def set_eval_mode(self):
@@ -165,12 +200,16 @@ class ActorCriticController(BaseAgent, nn.Module):
         self.eval_mode = False
 
     def save_model(self, path: str):
-        """Saves the model's weights and its configuration."""
+        """
+        Save model configuration and weights.
+        Stores:
+        - config.json : network architecture and state/action dimensions
+        - model.pth   : PyTorch model weights
+        """
+
         print(f"Saving model to {path}...")
-        # 1. Create directory if it doesn't exist
         os.makedirs(path, exist_ok=True)
 
-        # 2. Save model configuration
         config: Dict[str, Any] = {
             "state_space_shape": self.state_space_shape,
             "action_space_size": self.action_space_size,
@@ -180,24 +219,22 @@ class ActorCriticController(BaseAgent, nn.Module):
         with open(os.path.join(path, "config.json"), "w") as f:
             json.dump(config, f)
 
-        # 3. Save model weights
         torch.save(self.model.to("cpu").state_dict(), os.path.join(path, "model.pth"))
 
     @classmethod
-    def load_model(cls, path: str, device: str = "cpu"):
-        """Loads a model from a saved configuration and weights."""
+    def load_model(cls, path: str, device: str = "cpu") -> "ActorCriticController":
+        """
+        Load a model from disk.
+        Recreates the architecture using config.json and loads the trained weights.
+        """
         print(f"Loading model from {path}...")
 
-        # 1. Load model configuration
         with open(os.path.join(path, "config.json"), "r") as f:
             config = json.load(f)
 
-        # 2. Re-create the agent with the loaded config
-        # We must convert shape from list (JSON) to tuple
         config["hidden_layer_sizes"] = tuple(config["hidden_layer_sizes"])
         agent = cls(device=device, **config)
 
-        # 3. Load model weights
         weights_path = os.path.join(path, "model.pth")
         agent.model.load_state_dict(
             torch.load(weights_path, map_location=torch.device(device))

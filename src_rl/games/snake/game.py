@@ -28,6 +28,7 @@ class SnakeGame(BaseGame):
 
         self._food: Pos
         self._state: State
+        self._score: int
 
         self.reset()
 
@@ -36,6 +37,7 @@ class SnakeGame(BaseGame):
         self._current_state_index = 0
         self._last_computed_state = 0
         self._running = True
+        self._score = 0
 
         self.draw_new_food()
         self._state = self._compute_state()
@@ -46,6 +48,9 @@ class SnakeGame(BaseGame):
 
     def name(self) -> str:
         return "SNAKE"
+
+    def score(self) -> int:
+        return self._score
 
     def step(self, action_label: int) -> int:
         if not self._running:
@@ -60,6 +65,7 @@ class SnakeGame(BaseGame):
 
         self.snake.move()
         if self.snake.eat_food(self._food):
+            self._score += 1
             self.draw_new_food()
             return FOOD_REWARD
 

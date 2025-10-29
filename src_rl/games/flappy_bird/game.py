@@ -29,6 +29,7 @@ class FlappyGame(BaseGame):
         self.size = 0.1
 
         self._running: bool = True
+        self.infinite = infinite
 
         self.reset()
 
@@ -51,7 +52,10 @@ class FlappyGame(BaseGame):
         print(self.y_speed)
 
         if self.y >= 1.0 or self.y <= 0:
-            self._running = False
+            if self.infinite:
+                self.reset()
+            else:
+                self._running = False
 
         return 1
 
@@ -66,6 +70,9 @@ class FlappyGame(BaseGame):
 
     @property
     def number_of_moves(self) -> int:
+        return 2
+
+    def score(self) -> int:
         return 2
 
 

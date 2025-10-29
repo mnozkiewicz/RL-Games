@@ -19,5 +19,5 @@ class GUIConfig:
         if self.pixel_height > 1600 or self.pixel_width > 1600:
             raise ValueError("Pixel dimensions must be at most 1600 pixels")
 
-        if not (5 <= self.frame_rate <= 120):
-            raise ValueError("Frame rate should be in range [5, 120]")
+        if not (5 <= self.frame_rate <= 240):
+            raise ValueError("Frame rate should be in range [5, 240]")
