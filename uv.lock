@@ -1903,13 +1903,13 @@ dependencies = [
     { name = "pygame" },
     { name = "torch" },
     { name = "torchvision" },
+    { name = "tqdm" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "jupyter" },
     { name = "pre-commit" },
-    { name = "tqdm" },
 ]
 
 [package.metadata]
@@ -1919,13 +1919,13 @@ requires-dist = [
     { name = "pygame", specifier = ">=2.6.1" },
     { name = "torch", specifier = ">=2.8.0" },
     { name = "torchvision", specifier = ">=0.23.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "pre-commit", specifier = ">=4.3.0" },
-    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [[package]]

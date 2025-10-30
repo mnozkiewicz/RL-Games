@@ -1,6 +1,6 @@
 import numpy as np
 import pygame
-from src_rl.games.base_game import BaseGame
+from ..games.base_game import BaseGame
 from .base_player import BasePlayer
 from pygame.event import Event
 from typing import Dict, List
