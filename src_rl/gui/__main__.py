@@ -117,8 +117,7 @@ def main() -> None:
             agent = ActorCriticController(
                 game.processed_state().shape[0],
                 game.number_of_moves,
-                epsilon=0.05,
-                hidden_layer_sizes=(1024, 512, 256),
+                hidden_layer_sizes=(512, 256, 64),
             )
 
         player = AIPlayer(game=game, agent=agent, learn=args.learn)

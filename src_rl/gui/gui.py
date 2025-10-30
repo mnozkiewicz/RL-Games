@@ -4,6 +4,7 @@ from ..games.base_game import BaseGame, GameType
 from ..games.base_renderer import BaseRenderer
 from ..players.base_player import BasePlayer
 from ..players.event_handler import IEventHandler
+from .slider import Slider
 from typing import List
 
 
@@ -37,8 +38,9 @@ class GameGui:
         self.player = player
 
         # Pygame State Variables
-        self.screen: pygame.Surface  # The main display surface
-        self.clock: pygame.time.Clock  # Manages the frame rate
+        self.slider = Slider(
+            self.config.frame_rate, self.config.pixel_width, self.config.pixel_height
+        )
         self.running: bool  # Controls the main game loop
 
     def check_if_quit(self, events: List[pygame.event.Event]) -> None:
@@ -56,6 +58,7 @@ class GameGui:
         """
         events = list(pygame.event.get())
         self.check_if_quit(events)
+        self.slider.handle_events(events)
         return events
 
     def run_game(self) -> None:
@@ -69,11 +72,14 @@ class GameGui:
         pygame.init()
 
         self.running = True
-        self.screen = pygame.display.set_mode(
-            (self.config.pixel_height, self.config.pixel_height)
+
+        window = pygame.display.set_mode(
+            (self.config.pixel_width, self.config.pixel_height + 50)
         )
+        screen = pygame.Surface((self.config.pixel_width, self.config.pixel_height))
+
         pygame.display.set_caption(self.game.name())
-        self.clock = pygame.time.Clock()
+        clock = pygame.time.Clock()
 
         state = self.game.processed_state()
 
@@ -92,10 +98,14 @@ class GameGui:
             self.player.feedback(state, action, reward, new_state, is_terminal)
             state = new_state
 
-            self.renderer.draw(self.screen)
+            self.renderer.draw(screen)
+            self.slider.draw_slider()
+
+            window.blit(screen, (0, 0))
+            window.blit(self.slider.get_surface(), (0, self.config.pixel_height))
             pygame.display.flip()
 
-            self.clock.tick(self.config.frame_rate)
+            clock.tick(self.slider.compute_frame_rate())
             self.running = self.running and not is_terminal
 
         pygame.quit()
