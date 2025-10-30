@@ -1,44 +1,20 @@
 import argparse
 from pathlib import Path
-from typing import Tuple, Dict
 
 # Abstract interfaces
 from ..players.base_player import BasePlayer
-from ..games.base_game import BaseGame
-from ..games.base_renderer import BaseRenderer
 
 # Pygame GUI
 from .gui import GameGui
 from .gui_config import GUIConfig
 
-# Games and renderers
-from ..games.snake.game import SnakeGame
-from ..games.snake.renderer import SnakeRenderer
-from ..games.flappy_bird.game import FlappyGame
-from ..games.flappy_bird.renderer import FlappyRenderer
-
 # Players, agents and key_maps
 from ..players import HumanPlayer, AIPlayer
-from ..players.key_maps import snake_key_map, flappy_key_map
+from ..players.key_maps import get_game_key_map
 from ..agents.actor_critic import ActorCriticController
 
-
-def create_game_and_renderer(
-    game_name: str, infinite: bool
-) -> Tuple[BaseGame, BaseRenderer[BaseGame], Dict[int, int]]:
-    """
-    Factory function to initialize the correct game and renderer.
-    """
-    if game_name == "snake":
-        snake_game = SnakeGame(board_size=15, infinite=infinite)
-        snake_renderer = SnakeRenderer(snake_game)
-        return snake_game, snake_renderer, snake_key_map
-    elif game_name == "flappy":
-        flappy_game = FlappyGame(infinite=infinite)
-        flappy_renderer = FlappyRenderer(flappy_game)
-        return flappy_game, flappy_renderer, flappy_key_map
-    else:
-        raise ValueError(f"Unknown game: {game_name}")
+# Game object factory
+from ..games.create_game_and_renderer import create_game_and_renderer
 
 
 def main() -> None:
@@ -66,12 +42,6 @@ def main() -> None:
         action="store_true",
         help="Flag telling wheter to use trained agent",
     )
-    parser.add_argument(
-        "--model-path",
-        type=str,
-        default="src_rl/training/controller.pt",
-        help="Path to the trained AI model.",
-    )
 
     parser.add_argument(
         "--learn",
@@ -94,7 +64,8 @@ def main() -> None:
     args = parser.parse_args()
 
     # Game and GUI setup
-    game, renderer, key_map = create_game_and_renderer(args.game, args.infinite)
+    game, renderer = create_game_and_renderer(args.game, args.infinite)
+    key_map = get_game_key_map(args.game)
     config = GUIConfig(
         pixel_height=args.pixel_size,
         pixel_width=args.pixel_size,
@@ -109,15 +80,16 @@ def main() -> None:
         player = HumanPlayer(game=game, key_map=key_map)
     else:
         if args.pretrained:
-            if not Path(args.model_path).exists():
-                raise ValueError(f"There is no model in path {args.model_path}")
-            print(f"Loading AI model from {args.model_path}...")
-            agent = ActorCriticController.load_model(args.model_path)
+            model_path = f"src_rl/training/{game.name()}_controller"
+            if not Path(model_path).exists():
+                raise ValueError(f"There is no model in path {model_path}")
+            print(f"Loading AI model from {model_path}...")
+            agent = ActorCriticController.load_model(model_path)
         else:
             agent = ActorCriticController(
                 game.processed_state().shape[0],
                 game.number_of_moves,
-                hidden_layer_sizes=(512, 256, 64),
+                hidden_layer_sizes=(64, 64),
             )
 
         player = AIPlayer(game=game, agent=agent, learn=args.learn)

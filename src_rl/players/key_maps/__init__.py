@@ -4,7 +4,21 @@ with action -1 being ignored.
 """
 
 import pygame
+from typing import Dict
 from collections import defaultdict
+
+
+def get_game_key_map(game_name: str) -> Dict[int, int]:
+    """
+    Factory function to initialize the correct game.
+    """
+    if game_name == "snake":
+        return snake_key_map
+    elif game_name == "flappy":
+        return flappy_key_map
+    else:
+        raise ValueError(f"Unknown game: {game_name}")
+
 
 snake_key_map = defaultdict(
     lambda: -1,

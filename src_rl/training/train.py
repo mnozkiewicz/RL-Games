@@ -2,7 +2,7 @@ from torch import optim
 from ..agents.actor_critic import ActorCriticController
 from ..agents.base_agent import BaseAgent
 from ..games.base_game import BaseGame
-from ..games.snake.game import SnakeGame
+from ..games.create_game_engine import create_game
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
@@ -43,11 +43,11 @@ def plot_metrics(
 
     ax2 = ax1.twinx()
     color = "tab:blue"
-    ax2.set_ylabel("Snake Length", color=color)
+    ax2.set_ylabel("Game Score", color=color)
     ax2.plot(x_vals, lengths_ma, color=color)
     ax2.tick_params(axis="y", labelcolor=color)
 
-    plt.title("Moving Average of Reward and Snake Length")
+    plt.title("Moving Average of Reward and Game's Score")
     fig.tight_layout()
     plt.savefig(current_dir / f"plots/learning_{episode_number}.png")
     plt.close()
@@ -100,13 +100,21 @@ def train(
                     past_rewards, past_scores, window_size, current_dir, i_episode + 1
                 )
 
-    agent.save_model(str(current_dir / "controller.pt"))
+    agent.save_model(str(current_dir / f"{game.name()}_controller"))
 
     return agent
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train an Actor-Critic agent")
+
+    parser.add_argument(
+        "--game",
+        type=str,
+        default="snake",
+        choices=["flappy", "snake"],
+        help="Which game to run.",
+    )
     parser.add_argument(
         "--episodes", type=int, default=1000, help="Number of training episodes."
     )
@@ -127,31 +135,33 @@ def main() -> None:
         help="Device to run training on.",
     )
     parser.add_argument(
-        "--plot-step", type=int, default=25, help="How often to plot metrics."
+        "--plot-step", type=int, default=50, help="How often to plot metrics."
     )
     parser.add_argument(
-        "--window", type=int, default=10, help="Moving average window size."
+        "--window", type=int, default=25, help="Moving average window size."
     )
-    parser.add_argument("--board-size", type=int, default=15, help="Snake board size.")
 
     args = parser.parse_args()
 
-    snake_game = SnakeGame(args.board_size, infinite=False)
+    # Intitialize game engine
+    game = create_game(args.game, infinite=False)
 
+    # Create game agent
     actor_critic_agent = ActorCriticController(
-        state_space_shape=snake_game.processed_state().shape[0],
-        action_space_size=snake_game.number_of_moves,
+        state_space_shape=game.processed_state().shape[0],
+        action_space_size=game.number_of_moves,
         batch_size=args.batch_size,
-        hidden_layer_sizes=(1024, 512, 256),
+        hidden_layer_sizes=(256, 512, 64),
         discount_factor=0.99,
         device=args.device,
         optimizer=optim.AdamW,
         optimizer_kwargs={"lr": args.lr},
     )
 
+    # Run training
     train(
         actor_critic_agent,
-        snake_game,
+        game,
         num_episodes=args.episodes,
         max_steps_per_episode=args.max_steps,
         graph_plotting_step=args.plot_step,

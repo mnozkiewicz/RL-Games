@@ -1,3 +1,5 @@
 **/*.png
 *.pt
 *.pth
+
+*_controller

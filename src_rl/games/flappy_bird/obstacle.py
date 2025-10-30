@@ -1,7 +1,7 @@
 from random import uniform
 from .bird import Bird
 
-OBSTACLE_SPEED = 0.01
+OBSTACLE_SPEED = 0.02
 
 
 def segment_col(left1: float, right1: float, left2: float, right2: float) -> bool:
@@ -12,7 +12,7 @@ class Obstacle:
     def __init__(self):
         self.x = 1.0
         self.width = 0.08
-        self.hole = uniform(0.15, 0.5)
+        self.hole = uniform(0.2, 0.4)
         self.top = uniform(0, 1 - self.hole - 0.1)
         self.bottom = self.top + self.hole
 

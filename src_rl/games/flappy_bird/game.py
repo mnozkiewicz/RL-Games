@@ -72,8 +72,25 @@ class FlappyGame(BaseGame):
     def is_running(self) -> bool:
         return self._running
 
-    def processed_state(self) -> np.ndarray:  # TODO: imlplement state processing
-        return np.zeros((1, 1))
+    def processed_state(self) -> np.ndarray:  # TODO: implement state processing
+        features: List[float] = []
+        for obstacle in self.obstacles:
+            if obstacle.x + obstacle.width > self.bird.x:
+                features.append(obstacle.x + obstacle.width - self.bird.x)
+                features.append(obstacle.top - self.bird.y)
+                features.append(obstacle.bottom - self.bird.y)
+                features.append(obstacle.width)
+                break
+
+        if not features:
+            features.extend([1.0, -1.0, 1.0, 0.0])
+
+        features.append(self.bird.y)
+        features.append(1 - self.bird.y)
+        features.append(self.bird.y_speed)
+        features.append(self.bird.size)
+
+        return np.array(features, dtype=np.float32)
 
     def name(self) -> str:
         return "Flappy Bird"

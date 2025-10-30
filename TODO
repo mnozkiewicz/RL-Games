@@ -1,6 +1,3 @@
-☐ Implement flappy bird proccesed state
-☐ Train Flappy bird agent
-☐ Finish flappy bird renderer
 ☐ Think what to do with flappy bird's constants
 ☐ Improve argparser for training run
 ☐ Add seperate logger class to training
