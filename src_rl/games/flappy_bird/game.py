@@ -1,14 +1,11 @@
 import numpy as np
+from typing import List
+from random import randrange
+
 from ..base_game import BaseGame
-from dataclasses import dataclass
 from .utils import Action
-
-
-@dataclass
-class Obstacle:
-    x: float
-    speed: float = 0.01
-
+from .bird import Bird
+from .obstacle import Obstacle
 
 label_to_action = {
     -1: Action.NOTHING,
@@ -16,53 +13,66 @@ label_to_action = {
     1: Action.JUMP,
 }
 
+OBSTACLE_TIME_SPAWN = 50
+
+MOVE_REWARD = 1
+DEATH_REWARD = 0
+
 
 class FlappyGame(BaseGame):
     def __init__(self, infinite: bool = True):
-        self.x: float = 0.3
-        self.y: float = 0.5
-
-        self.g = 1.0  # Acceleraration
-        self.t = 0.1
-        self.y_speed = 0.0
-        self.flap_strength = -0.3
-        self.size = 0.1
+        self.bird = Bird()
+        self.obstacles: List[Obstacle] = []
+        self._score = 0
+        self.last_spawn = 0
 
         self._running: bool = True
-        self.infinite = infinite
 
+        self.infinite = infinite
         self.reset()
 
     def reset(self):
-        self.x = 0.3
-        self.y = 0.5
-
+        self.bird.reset()
+        self.obstacles: List[Obstacle] = []
+        self._score = 0
+        self.last_spawn = 0
         self._running = True
+
+    def death(self) -> int:
+        if self.infinite:
+            self.reset()
+        else:
+            self._running = False
+        return DEATH_REWARD
 
     def step(self, action_label: int) -> int:
         action = label_to_action[action_label]
-        print(action)
-        if action == Action.NOTHING:
-            self.y_speed += self.g * self.t
-        else:
-            self.y_speed = self.flap_strength
+        self.bird.step(action)
 
-        self.y += self.y_speed * self.t
+        for obstacle in self.obstacles:
+            obstacle.step()
+            if obstacle.collision(self.bird):
+                return self.death()
+            if obstacle.x + obstacle.width < self.bird.x:
+                self._score += obstacle.pass_bird()
 
-        print(self.y_speed)
+        if self.obstacles and self.obstacles[0].x < -0.1:
+            self.obstacles.pop(0)
 
-        if self.y >= 1.0 or self.y <= 0:
-            if self.infinite:
-                self.reset()
-            else:
-                self._running = False
+        if self.bird.y + self.bird.size >= 1.03 or self.bird.y <= -0.03:
+            return self.death()
 
-        return 1
+        self.last_spawn += 1
+        if self.last_spawn > OBSTACLE_TIME_SPAWN:
+            self.obstacles.append(Obstacle())
+            self.last_spawn = randrange(0, 20)
+
+        return MOVE_REWARD
 
     def is_running(self) -> bool:
         return self._running
 
-    def processed_state(self) -> np.ndarray:
+    def processed_state(self) -> np.ndarray:  # TODO: imlplement state processing
         return np.zeros((1, 1))
 
     def name(self) -> str:
@@ -73,13 +83,4 @@ class FlappyGame(BaseGame):
         return 2
 
     def score(self) -> int:
-        return 2
-
-
-#     def reset(self):
-
-#     def step(self, action_label: int) -> int:
-
-#     def is_running(self) -> bool:
-
-#     def processed_state(self) -> np.ndarray:
+        return self._score

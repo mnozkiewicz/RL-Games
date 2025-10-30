@@ -1,7 +1,9 @@
+☐ Implement flappy bird proccesed state
+☐ Train Flappy bird agent
+☐ Finish flappy bird renderer
+☐ Think what to do with flappy bird's constants
 ☐ Improve argparser for training run
 ☐ Add seperate logger class to training
 ☐ Add ability to pass custom rewards
-☐ Add slider with frame rate to pygame window
-☐ Finish the flappy bird
 ☐ Refactor the snake code
 ☐ Implement DQN agent
