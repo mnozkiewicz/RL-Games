@@ -3,10 +3,6 @@ from .utils import Pos, State, Action
 from .snake import Snake
 from ..base_game import BaseGame
 
-FOOD_REWARD = 50
-DEATH_REWARD = -500
-MOVE_REWARD = -1
-
 label_to_action = {
     -1: Action.NOTHING,
     0: Action.UP,
@@ -17,6 +13,10 @@ label_to_action = {
 
 
 class SnakeGame(BaseGame):
+    FOOD_REWARD = 50
+    DEATH_REWARD = -500
+    MOVE_REWARD = -1
+
     def __init__(self, board_size: int, infinite: bool = True):
         self.board_size: int = board_size
         self.infinte: bool = infinite
@@ -54,7 +54,7 @@ class SnakeGame(BaseGame):
 
     def step(self, action_label: int) -> int:
         if not self._running:
-            return DEATH_REWARD
+            return SnakeGame.DEATH_REWARD
 
         self._current_state_index += 1
 
@@ -67,16 +67,16 @@ class SnakeGame(BaseGame):
         if self.snake.eat_food(self._food):
             self._score += 1
             self.draw_new_food()
-            return FOOD_REWARD
+            return SnakeGame.FOOD_REWARD
 
         elif self.snake.collision():
             if not self.infinte:
                 self._running = False
             else:
                 self.reset()
-            return DEATH_REWARD
+            return SnakeGame.DEATH_REWARD
         else:
-            return MOVE_REWARD
+            return SnakeGame.MOVE_REWARD
 
     def get_state(self) -> State:
         if self._last_computed_state < self._current_state_index:

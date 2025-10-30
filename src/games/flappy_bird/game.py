@@ -13,13 +13,12 @@ label_to_action = {
     1: Action.JUMP,
 }
 
-OBSTACLE_TIME_SPAWN = 50
-
-MOVE_REWARD = 1
-DEATH_REWARD = 0
-
 
 class FlappyGame(BaseGame):
+    OBSTACLE_TIME_SPAWN = 50
+    MOVE_REWARD = 1
+    DEATH_REWARD = 0
+
     def __init__(self, infinite: bool = True):
         self.bird = Bird()
         self.obstacles: List[Obstacle] = []
@@ -43,7 +42,7 @@ class FlappyGame(BaseGame):
             self.reset()
         else:
             self._running = False
-        return DEATH_REWARD
+        return FlappyGame.DEATH_REWARD
 
     def step(self, action_label: int) -> int:
         action = label_to_action[action_label]
@@ -63,11 +62,11 @@ class FlappyGame(BaseGame):
             return self.death()
 
         self.last_spawn += 1
-        if self.last_spawn > OBSTACLE_TIME_SPAWN:
+        if self.last_spawn > FlappyGame.OBSTACLE_TIME_SPAWN:
             self.obstacles.append(Obstacle())
             self.last_spawn = randrange(0, 20)
 
-        return MOVE_REWARD
+        return FlappyGame.MOVE_REWARD
 
     def is_running(self) -> bool:
         return self._running

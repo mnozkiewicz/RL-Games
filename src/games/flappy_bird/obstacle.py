@@ -1,14 +1,14 @@
 from random import uniform
 from .bird import Bird
 
-OBSTACLE_SPEED = 0.02
-
 
 def segment_col(left1: float, right1: float, left2: float, right2: float) -> bool:
     return (left1 <= left2 <= right1) or (left2 <= left1 <= right2)
 
 
 class Obstacle:
+    OBSTACLE_SPEED = 0.02
+
     def __init__(self):
         self.x = 1.0
         self.width = 0.08
@@ -19,7 +19,7 @@ class Obstacle:
         self.passed_bird = False
 
     def step(self):
-        self.x -= OBSTACLE_SPEED
+        self.x -= Obstacle.OBSTACLE_SPEED
 
     def upper_collision(self, bird: Bird) -> bool:
         return segment_col(
