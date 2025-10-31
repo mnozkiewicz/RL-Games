@@ -43,4 +43,32 @@ class FlappyRenderer(BaseRenderer[FlappyGame]):
             pygame.draw.rect(surface, Color.GREEN, lower_rect)
 
     def game_screenshot(self, output_size: Optional[int] = None) -> Image.Image:
-        return Image.fromarray(np.zeros((10, 10)))
+        if output_size is not None and output_size <= 0:
+            raise ValueError(
+                f"`output_size should be a positive integer, given: {output_size}"
+            )
+        if output_size is None:
+            output_size = 256
+
+        screenshot = np.full(
+            (output_size, output_size, 3), fill_value=255, dtype=np.uint8
+        )
+
+        flappy_x = int(output_size * self.game.bird.x)
+        flappy_y = int(output_size * self.game.bird.y)
+        height = int(output_size * self.game.bird.size)
+
+        screenshot[flappy_y : flappy_y + height, flappy_x : flappy_x + height] = (
+            Color.RED
+        )
+
+        for obstacle in self.game.obstacles:
+            left = int(obstacle.x * output_size)
+            right = int((obstacle.x + obstacle.width) * output_size)
+            top = int(obstacle.top * output_size)
+            bottom = int(obstacle.bottom * output_size)
+
+            screenshot[:top, left:right] = Color.GREEN
+            screenshot[bottom:, left:right] = Color.GREEN
+
+        return Image.fromarray(screenshot)

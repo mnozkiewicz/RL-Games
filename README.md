@@ -17,7 +17,6 @@ uv sync
 source .venv/bin/activate
 ```
 
-
 ## How to Run
 
 In order to check the options for running the game type
@@ -58,15 +57,20 @@ uv run -m src.gui --game snake --player ai --pretrained --infinite
 
 ## Implemented games
 
-So far I've implemented two games:
+So far I've implemented (and trained agent to play them) for two games:
 
 * **Snake**
-* **Flappy Bird**
-
 
 ![Image](https://github.com/user-attachments/assets/8a22f19a-8b60-4c67-8fbb-bdcc2767d774)
+
+* **Flappy Bird**
+
+![Image](https://github.com/user-attachments/assets/cef3fdc6-0176-4485-80eb-418601f0ec76)
+
+
+The visual presentation might seem quite minimalistic, but more focus was put into implementing agent's behavior.
 
 
 ## Implemented Reinforcement agents
 
-So fat the only algorithm is a classis Actor-Critic.
+So far the only RL algorithm I've tried for the games is Actor-Critic.
