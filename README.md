@@ -2,8 +2,6 @@
 
 A small Python framework for training, and visualizing reinforcement learning agents in classic single player games. This project uses PyTorch for AI agents and Pygame for visualization.
 
-## 
-
 ## Setup and Installation
 
 The package manager used for this project is [uv](https://docs.astral.sh/uv/getting-started/installation/).
