@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Optional
 import numpy as np
 from numpy.typing import NDArray
+from typing import Generator
 
 
 @dataclass(frozen=True, eq=True)
@@ -17,7 +18,7 @@ class Pos:
     def mod_index(self, size: int) -> Pos:
         return Pos(self.x % size, self.y % size)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[int, None, None]:
         yield self.x
         yield self.y
 

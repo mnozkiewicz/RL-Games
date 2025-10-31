@@ -19,7 +19,7 @@ class GameGui:
         game: BaseGame,
         config: GUIConfig,
         player: BasePlayer,
-    ):
+    ) -> None:
         """
         Args:
             renderer: An instance of BaseRenderer subclass responsible

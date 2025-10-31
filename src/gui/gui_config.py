@@ -12,7 +12,7 @@ class GUIConfig:
     pixel_width: int = 600
     frame_rate: int = 10
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.pixel_height <= 0 or self.pixel_width <= 0:
             raise ValueError("Pixel dimensions must be positive.")
 

@@ -20,7 +20,7 @@ class FlappyGame(BaseGame):
     DEATH_REWARD = 0
 
     def __init__(self, infinite: bool = True):
-        self.bird = Bird()
+        self.bird: Bird = Bird()
         self.obstacles: List[Obstacle] = []
         self._score = 0
         self.last_spawn = 0
@@ -30,9 +30,9 @@ class FlappyGame(BaseGame):
         self.infinite = infinite
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         self.bird.reset()
-        self.obstacles: List[Obstacle] = []
+        self.obstacles = []
         self._score = 0
         self.last_spawn = 0
         self._running = True

@@ -15,7 +15,7 @@ class BaseGame(ABC):
         super().__init__()
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         """
         Resets the game to its initial state.
 

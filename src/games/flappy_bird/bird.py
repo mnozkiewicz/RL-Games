@@ -9,19 +9,19 @@ class Bird:
     INIT_Y = 0.5
     BIRD_SIZE = 0.06
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.x = Bird.INIT_X
 
         self.y = Bird.INIT_Y
         self.y_speed = 0.0
         self.size = Bird.BIRD_SIZE
 
-    def reset(self):
+    def reset(self) -> None:
         self.x = Bird.INIT_X
         self.y = Bird.INIT_Y
         self.y_speed = 0.0
 
-    def step(self, action: Action):
+    def step(self, action: Action) -> None:
         if action == Action.NOTHING:
             self.y_speed += Bird.G * Bird.T
         else:

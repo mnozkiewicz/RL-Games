@@ -11,10 +11,12 @@ dependencies = [
     "torch>=2.8.0",
     "torchvision>=0.23.0",
     "tqdm>=4.67.1",
+    "types-tqdm>=4.67.0.20250809",
 ]
 
 [dependency-groups]
 dev = [
     "jupyter>=1.1.1",
+    "mypy>=1.18.2",
     "pre-commit>=4.3.0",
 ]

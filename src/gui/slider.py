@@ -11,7 +11,7 @@ class Slider:
         self.area_height = 50
         self.surface = pygame.Surface((width, self.area_height))
 
-    def draw_slider(self):
+    def draw_slider(self) -> None:
         self.surface.fill(Color.BLACK)
 
         pygame.draw.rect(
@@ -42,7 +42,7 @@ class Slider:
                     ) < mx < (self.width * 0.95):
                         self.x = mx
 
-    def get_surface(self):
+    def get_surface(self) -> pygame.Surface:
         return self.surface
 
     def compute_frame_rate(self) -> int:

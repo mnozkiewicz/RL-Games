@@ -46,6 +46,8 @@ class ActorCriticController(BaseAgent, nn.Module):
         # Set optimizer
         if optimizer_kwargs is None:
             optimizer_kwargs = {}
+
+        self.optimizer: optim.Optimizer
         if optimizer is None:
             self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
         else:
@@ -101,6 +103,7 @@ class ActorCriticController(BaseAgent, nn.Module):
         with torch.no_grad():
             probs = self.model["actor"](state_tensor)
 
+        action: torch.Tensor
         if self.eval_mode:
             # Greedy action for evaluation
             action = torch.argmax(probs, dim=1)
@@ -114,7 +117,7 @@ class ActorCriticController(BaseAgent, nn.Module):
 
             # Sample action from the categorical distribution
             distribution = Categorical(probs=probs)
-            action = distribution.sample()
+            action = distribution.sample()  # type: ignore[no-untyped-call]
             return int(action.item())
 
     @torch.no_grad()
@@ -122,7 +125,7 @@ class ActorCriticController(BaseAgent, nn.Module):
         """
         Estimate the value of a state using the critic network.
         """
-        expected_reward = self.model["critic"](state)
+        expected_reward: torch.Tensor = self.model["critic"](state)
         return expected_reward.detach()
 
     def learn(
@@ -185,21 +188,21 @@ class ActorCriticController(BaseAgent, nn.Module):
 
             # Backpropagate combined loss (averaged out over batch)
             total_loss = (critics_loss + actors_loss).mean()
-            total_loss.backward()
+            total_loss.backward()  # type: ignore[no-untyped-call]
             self.optimizer.step()
 
             # Clear buffer after update
             self.trajectory_buffer.clear()
 
-    def set_eval_mode(self):
+    def set_eval_mode(self) -> None:
         self.eval()
         self.eval_mode = True
 
-    def set_train_mode(self):
+    def set_train_mode(self) -> None:
         self.train()
         self.eval_mode = False
 
-    def save_model(self, path: str):
+    def save_model(self, path: str) -> None:
         """
         Save model configuration and weights.
         Stores:

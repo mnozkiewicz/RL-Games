@@ -9,7 +9,7 @@ def segment_col(left1: float, right1: float, left2: float, right2: float) -> boo
 class Obstacle:
     OBSTACLE_SPEED = 0.02
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.x = 1.0
         self.width = 0.08
         self.hole = uniform(0.2, 0.4)
@@ -18,7 +18,7 @@ class Obstacle:
 
         self.passed_bird = False
 
-    def step(self):
+    def step(self) -> None:
         self.x -= Obstacle.OBSTACLE_SPEED
 
     def upper_collision(self, bird: Bird) -> bool:

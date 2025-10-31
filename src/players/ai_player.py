@@ -13,7 +13,7 @@ class AIPlayer(BasePlayer):
     interfaces
     """
 
-    def __init__(self, game: BaseGame, agent: BaseAgent, learn: bool = False):
+    def __init__(self, game: BaseGame, agent: BaseAgent, learn: bool = False) -> None:
         """
         If 'learn' is set to True, then the agent will learn during visualisation
         """

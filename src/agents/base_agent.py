@@ -7,7 +7,7 @@ class BaseAgent(ABC):
     An abstract base class (ABC) for a reinforcement learning agent.
     """
 
-    def __init__(self, state_space_shape: int, action_space_size: int):
+    def __init__(self, state_space_shape: int, action_space_size: int) -> None:
         """
         Initializes the agent.
         The agent is by default set to training mode.
@@ -33,7 +33,7 @@ class BaseAgent(ABC):
         reward: int,
         next_state: np.ndarray,
         terminal: bool,
-    ):
+    ) -> None:
         """
         Performs a learning step based on a transition.
         A transition is a typical SARSA tuple (state, action, reward, next_state),
@@ -42,13 +42,13 @@ class BaseAgent(ABC):
         ...
 
     @abstractmethod
-    def set_eval_mode(self): ...
+    def set_eval_mode(self) -> None: ...
 
     @abstractmethod
-    def set_train_mode(self): ...
+    def set_train_mode(self) -> None: ...
 
     @abstractmethod
-    def save_model(self, path: str): ...
+    def save_model(self, path: str) -> None: ...
 
     @classmethod
     @abstractmethod

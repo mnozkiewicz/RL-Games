@@ -27,7 +27,7 @@ class TrajectoryBuffer:
     Used for batching updates to the networks.
     """
 
-    def __init__(self, max_len: int):
+    def __init__(self, max_len: int) -> None:
         self.max_len = max_len
         self.buffer: List[Transition] = []  # Stores Transition namedtuples
 
@@ -38,7 +38,7 @@ class TrajectoryBuffer:
         reward: float,
         next_state: np.ndarray,
         done: bool,
-    ):
+    ) -> None:
         """
         Add a new transition to the buffer.
         If the buffer exceeds max_len, discard the oldest transition.
@@ -53,14 +53,16 @@ class TrajectoryBuffer:
         """
         return len(self.buffer) >= self.max_len
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Empty the buffer.
         Called after an update to prepare for the next batch.
         """
         self.buffer.clear()
 
-    def collect_array(self, attr: Callable[[Transition], Any], dtype: np.dtype[Any]):
+    def collect_array(
+        self, attr: Callable[[Transition], Any], dtype: np.dtype[Any]
+    ) -> np.ndarray:
         """
         Helper function to extract a specific attribute from all transitions
         and return it as a NumPy array of the specified dtype.

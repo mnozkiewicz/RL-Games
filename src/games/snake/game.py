@@ -17,7 +17,7 @@ class SnakeGame(BaseGame):
     DEATH_REWARD = -500
     MOVE_REWARD = -1
 
-    def __init__(self, board_size: int, infinite: bool = True):
+    def __init__(self, board_size: int, infinite: bool = True) -> None:
         self.board_size: int = board_size
         self.infinte: bool = infinite
 
@@ -32,7 +32,7 @@ class SnakeGame(BaseGame):
 
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         self.snake = Snake(self.board_size // 2, self.board_size // 2, self.board_size)
         self._current_state_index = 0
         self._last_computed_state = 0
@@ -111,7 +111,7 @@ class SnakeGame(BaseGame):
         self._food = Pos(row.item(), col.item())
 
     def processed_state(self) -> np.ndarray:
-        def get_local_window(state: State, window_size: int = 7):
+        def get_local_window(state: State, window_size: int = 7) -> np.ndarray:
             head_x, head_y = state.head
             food_x, food_y = state.food
             board_size = state.board_size
@@ -140,7 +140,7 @@ class SnakeGame(BaseGame):
 
         local_view = get_local_window(state, 7)
 
-        def danger_in_direction(dx: int, dy: int):
+        def danger_in_direction(dx: int, dy: int) -> float:
             x = (head_x + dx) % board_size
             y = (head_y + dy) % board_size
             return 1.0 if state.board[x, y] >= 1 else 0.0
