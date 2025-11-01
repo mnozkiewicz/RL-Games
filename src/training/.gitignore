@@ -1,5 +1,9 @@
+# Output images and gifs
 **/*.png
+**/*.gif
+
+# Saved models
 *.pt
 *.pth
-
 *_controller
+
