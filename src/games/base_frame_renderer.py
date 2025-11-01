@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from pygame import Surface
 from PIL import Image
 from typing import Generic, Optional
-from ..games.base_game import GameType
+from .base_game import GameType
 
 
-class BaseRenderer(ABC, Generic[GameType]):
+class BaseFrameRenderer(ABC, Generic[GameType]):
     """
     An abstract base class (ABC) for a game renderer.
 
@@ -18,14 +17,7 @@ class BaseRenderer(ABC, Generic[GameType]):
         self.game = game
 
     @abstractmethod
-    def draw(self, surface: Surface) -> None:
-        """
-        Draws the current state of self.game to the surface.
-        """
-        pass
-
-    @abstractmethod
-    def game_screenshot(self, output_size: Optional[int]) -> Image.Image:
+    def render(self, output_size: Optional[int]) -> Image.Image:
         """
         Draws the current state of self.game to the surface.
         """

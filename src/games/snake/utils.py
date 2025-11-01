@@ -15,6 +15,9 @@ class Pos:
     def __add__(self, other: Pos) -> Pos:
         return Pos(self.x + other.x, self.y + other.y)
 
+    def __sub__(self, other: Pos) -> Pos:
+        return Pos(self.x - other.x, self.y - other.y)
+
     def mod_index(self, size: int) -> Pos:
         return Pos(self.x % size, self.y % size)
 
@@ -39,6 +42,17 @@ class Dir(Enum):
                 return Pos(-1, 0)
             case Dir.RIGHT:
                 return Pos(1, 0)
+
+    def angle(self) -> int:
+        match self:
+            case Dir.UP:
+                return 90
+            case Dir.DOWN:
+                return -90
+            case Dir.LEFT:
+                return 180
+            case Dir.RIGHT:
+                return 0
 
     def opposite(self) -> Dir:
         match self:

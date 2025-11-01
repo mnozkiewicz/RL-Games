@@ -1,3 +1,4 @@
+from __future__ import annotations
 import torch
 import os
 import json
@@ -225,7 +226,7 @@ class ActorCriticController(BaseAgent, nn.Module):
         torch.save(self.model.to("cpu").state_dict(), os.path.join(path, "model.pth"))
 
     @classmethod
-    def load_model(cls, path: str, device: str = "cpu") -> "ActorCriticController":
+    def load_model(cls, path: str, device: str = "cpu") -> ActorCriticController:
         """
         Load a model from disk.
         Recreates the architecture using config.json and loads the trained weights.

@@ -1,0 +1,3 @@
+#### This folder stores downloaded assets (e.g. images, maps, etc.)
+#### It is intentionally empty in the repository.
+#### Run `python scripts/download_assets.py` to populate it.

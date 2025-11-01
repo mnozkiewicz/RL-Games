@@ -1,7 +1,7 @@
 import pygame
 from .gui_config import GUIConfig
 from ..games.base_game import BaseGame, GameType
-from ..games.base_renderer import BaseRenderer
+from ..games.base_pygame_renderer import BasePygameRenderer
 from ..players.base_player import BasePlayer
 from ..players.event_handler import IEventHandler
 from .slider import Slider
@@ -15,7 +15,7 @@ class GameGui:
 
     def __init__(
         self,
-        renderer: BaseRenderer[GameType],
+        renderer: BasePygameRenderer[GameType],
         game: BaseGame,
         config: GUIConfig,
         player: BasePlayer,
@@ -77,6 +77,7 @@ class GameGui:
             (self.config.pixel_width, self.config.pixel_height + 50)
         )
         screen = pygame.Surface((self.config.pixel_width, self.config.pixel_height))
+        self.renderer.init_pygame_renderer(screen)
 
         pygame.display.set_caption(self.game.name())
         clock = pygame.time.Clock()
