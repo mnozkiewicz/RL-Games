@@ -93,7 +93,7 @@ class SnakePygameRenderer(BasePygameRenderer[SnakeGame]):
             vec2 = self.compute_vector(prev_pos, pos, size)
 
             # If dot-product equals 0 then it must be 90 degree angle (turn)
-            if (vec1.x * vec2.x + vec1.y * vec2.y) != 0:
+            if (vec1.x * vec2.x + vec1.y * vec2.y) == 0:
                 turn_angle = self.compute_turn_angle(vec1, vec2)
                 surface.blit(
                     self.rotate(self.curve, turn_angle),

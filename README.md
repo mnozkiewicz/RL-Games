@@ -59,11 +59,11 @@ So far I've implemented (and trained agent to play them) for two games:
 
 * **Snake**
 
-![Image](https://github.com/user-attachments/assets/8a22f19a-8b60-4c67-8fbb-bdcc2767d774)
+![Snake_gif](https://github.com/user-attachments/assets/87c7753b-b4f8-481d-a65c-3e2dd2adc7d7)
 
 * **Flappy Bird**
 
-![Image](https://github.com/user-attachments/assets/cef3fdc6-0176-4485-80eb-418601f0ec76)
+![Flappy_gif](https://github.com/user-attachments/assets/cef3fdc6-0176-4485-80eb-418601f0ec76)
 
 
 The visual presentation might seem quite minimalistic, but more focus was put into implementing agent's behavior.
