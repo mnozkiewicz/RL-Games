@@ -66,9 +66,6 @@ So far I've implemented (and trained agent to play them) for two games:
 ![Flappy_gif](https://github.com/user-attachments/assets/b1f97d8c-2f24-427c-b625-1a6aeff7a549)
 
 
-The visual presentation might seem quite minimalistic, but more focus was put into implementing agent's behavior.
-
-
 ## Implemented Reinforcement agents
 
 So far the only RL algorithm I've tried for the games is Actor-Critic.
