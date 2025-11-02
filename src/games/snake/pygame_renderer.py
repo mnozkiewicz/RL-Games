@@ -19,7 +19,7 @@ class SnakePygameRenderer(BasePygameRenderer[SnakeGame]):
 
     def load_assets(self) -> None:
         # Path to folder containing assets
-        asset_path = Path(__file__).parent / "assets"
+        asset_path = Path("assets/snake")
 
         self.apple = self.load_image(asset_path / "apple.png")
         self.head = self.load_image(asset_path / "head.png")

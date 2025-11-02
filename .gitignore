@@ -10,8 +10,8 @@ wheels/
 .venv
 
 # Vscode
-.Vscode
-.DS_Store
+.vscode
+**/.DS_Store
 
 # Notebooks
 **/*.ipynb

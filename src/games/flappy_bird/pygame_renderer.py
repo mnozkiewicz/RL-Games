@@ -22,7 +22,7 @@ class FlappyRenderer(BasePygameRenderer[FlappyGame]):
 
     def load_assets(self) -> None:
         # Path to folder containing assets
-        asset_path = Path(__file__).parent / "assets"
+        asset_path = Path("assets/flappy")
 
         self.background = self.load_image(
             asset_path / "background.png", (self.screen_width, self.screen_height)
