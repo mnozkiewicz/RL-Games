@@ -9,7 +9,8 @@ def segment_col(left1: float, right1: float, left2: float, right2: float) -> boo
 class Obstacle:
     OBSTACLE_SPEED = 0.02
 
-    def __init__(self) -> None:
+    def __init__(self, obstacle_id: int) -> None:
+        self._obstacle_id = obstacle_id
         self.x = 1.0
         self.width = 0.08
         self.hole = uniform(0.2, 0.4)
@@ -40,3 +41,6 @@ class Obstacle:
             return 1
         else:
             return 0
+
+    def get_id(self) -> int:
+        return self._obstacle_id

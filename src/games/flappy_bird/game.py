@@ -24,6 +24,7 @@ class FlappyGame(BaseGame):
         self.obstacles: List[Obstacle] = []
         self._score = 0
         self.last_spawn = 0
+        self.obstacle_count = 0
 
         self._running: bool = True
 
@@ -35,6 +36,8 @@ class FlappyGame(BaseGame):
         self.obstacles = []
         self._score = 0
         self.last_spawn = 0
+        self.obstacle_count = 0
+
         self._running = True
 
     def death(self) -> int:
@@ -63,7 +66,8 @@ class FlappyGame(BaseGame):
 
         self.last_spawn += 1
         if self.last_spawn > FlappyGame.OBSTACLE_TIME_SPAWN:
-            self.obstacles.append(Obstacle())
+            self.obstacles.append(Obstacle(self.obstacle_count))
+            self.obstacle_count += 1
             self.last_spawn = randrange(0, 20)
 
         return FlappyGame.MOVE_REWARD
