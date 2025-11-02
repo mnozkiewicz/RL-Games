@@ -80,7 +80,7 @@ def main() -> None:
         player = HumanPlayer(game=game, key_map=key_map)
     else:
         if args.pretrained:
-            model_path = f"src/training/{game.name()}_controller"
+            model_path = f"weights/{game.name()}_controller"
             if not Path(model_path).exists():
                 raise ValueError(f"There is no model in path {model_path}")
             print(f"Loading AI model from {model_path}...")

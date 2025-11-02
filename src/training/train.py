@@ -100,7 +100,7 @@ def train(
                     past_rewards, past_scores, window_size, current_dir, i_episode + 1
                 )
 
-    agent.save_model(str(current_dir / f"{game.name()}_controller"))
+    agent.save_model(str(Path("weights") / f"{game.name()}_controller"))
 
     return agent
 
