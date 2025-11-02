@@ -138,7 +138,7 @@ class SnakeGame(BaseGame):
         dir_x, dir_y = state.snake_dir.vector()
         board_size = state.board_size
 
-        local_view = get_local_window(state, 7)
+        local_view = get_local_window(state, 5)
 
         def danger_in_direction(dx: int, dy: int) -> float:
             x = (head_x + dx) % board_size
@@ -155,6 +155,9 @@ class SnakeGame(BaseGame):
 
         relational = np.array(
             [
+                float(head_x) / self.board_size,  # Head pos
+                float(head_y) / self.board_size,
+                self.snake.length(),  # Snakes length
                 danger_in_direction(dir_x, dir_y),
                 danger_in_direction(-dir_y, dir_x),
                 danger_in_direction(dir_y, -dir_x),
@@ -171,4 +174,4 @@ class SnakeGame(BaseGame):
             dtype=np.float32,
         )
 
-        return np.concatenate((local_view, relational))
+        return np.concatenate((relational, local_view))

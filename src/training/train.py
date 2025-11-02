@@ -151,7 +151,7 @@ def main() -> None:
         state_space_shape=game.processed_state().shape[0],
         action_space_size=game.number_of_moves,
         batch_size=args.batch_size,
-        hidden_layer_sizes=(256, 512, 64),
+        hidden_layer_sizes=(256, 512, 512, 64),
         discount_factor=0.99,
         device=args.device,
         optimizer=optim.AdamW,
