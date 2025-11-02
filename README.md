@@ -63,7 +63,7 @@ So far I've implemented (and trained agent to play them) for two games:
 
 * **Flappy Bird**
 
-![Flappy_gif](https://github.com/user-attachments/assets/cef3fdc6-0176-4485-80eb-418601f0ec76)
+![Flappy_gif](https://github.com/user-attachments/assets/b1f97d8c-2f24-427c-b625-1a6aeff7a549)
 
 
 The visual presentation might seem quite minimalistic, but more focus was put into implementing agent's behavior.
