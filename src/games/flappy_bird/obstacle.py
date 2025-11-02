@@ -8,11 +8,12 @@ def segment_col(left1: float, right1: float, left2: float, right2: float) -> boo
 
 class Obstacle:
     OBSTACLE_SPEED = 0.02
+    OBSTACLE_WIDTH = 0.08
 
     def __init__(self, obstacle_id: int) -> None:
         self._obstacle_id = obstacle_id
         self.x = 1.0
-        self.width = 0.08
+        self.width = Obstacle.OBSTACLE_WIDTH
         self.hole = uniform(0.2, 0.4)
         self.top = uniform(0, 1 - self.hole - 0.1)
         self.bottom = self.top + self.hole

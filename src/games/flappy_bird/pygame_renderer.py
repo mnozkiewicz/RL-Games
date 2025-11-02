@@ -1,5 +1,6 @@
 import pygame
 from .game import FlappyGame
+from .obstacle import Obstacle
 from ..base_pygame_renderer import BasePygameRenderer
 from pathlib import Path
 from typing import Optional, Tuple, Dict
@@ -24,10 +25,28 @@ class FlappyRenderer(BasePygameRenderer[FlappyGame]):
         # Path to folder containing assets
         asset_path = Path("assets/flappy")
 
+        if not asset_path.exists():
+            raise FileNotFoundError(
+                f"Could not locate assets for snake game under: {asset_path}"
+                f"Check the 'Downloading assets and weights' section in README.md"
+            )
+
         self.background = self.load_image(
             asset_path / "background.png", (self.screen_width, self.screen_height)
         )
         self.pipe = self.load_image(asset_path / "pipe.png")
+        self.pipe_rotated = pygame.transform.rotate(
+            self.load_image(asset_path / "pipe.png"), 180
+        )
+
+        pipe_top = self.load_image(asset_path / "pipe_top.png")
+        w, h = pipe_top.get_width(), pipe_top.get_height()
+
+        target_width = int(Obstacle.OBSTACLE_WIDTH * self.screen_width)
+        self.pipe_top = self.resize(
+            pipe_top, (target_width, int((target_width / w) * h))
+        )
+        self.pipe_top_rotated = pygame.transform.rotate(self.pipe_top, 180)
 
         self.bird_size = int(self.game.bird.size * self.screen_height)
 
@@ -86,7 +105,7 @@ class FlappyRenderer(BasePygameRenderer[FlappyGame]):
                         ),
                     ),
                     self.resize(
-                        self.pipe,
+                        self.pipe_rotated,
                         (
                             int(obstacle.width * self.screen_width),
                             int((1 - obstacle.bottom) * self.screen_height),
@@ -96,9 +115,25 @@ class FlappyRenderer(BasePygameRenderer[FlappyGame]):
 
         for key, obstacle in seen_obstacles.items():
             pipe_uppper, pipe_lower = self.obstacles[key]
+
             surface.blit(pipe_uppper, (int(obstacle.x * self.screen_width), 0))
             surface.blit(
+                self.pipe_top,
+                (
+                    int(obstacle.x * self.screen_width),
+                    int(obstacle.top * self.screen_height - self.pipe_top.get_height()),
+                ),
+            )
+
+            surface.blit(
                 pipe_lower,
+                (
+                    int(obstacle.x * self.screen_width),
+                    int(obstacle.bottom * self.screen_height),
+                ),
+            )
+            surface.blit(
+                self.pipe_top_rotated,
                 (
                     int(obstacle.x * self.screen_width),
                     int(obstacle.bottom * self.screen_height),
