@@ -15,6 +15,28 @@ uv sync
 source .venv/bin/activate
 ```
 
+## Downloading assets and weights
+
+Assets are just images for every game used in pygame.
+Weights are the parameters of the rl-agents trained to play the games.
+
+In order to and start pygame gui (instructions for this below), you either need to download assets manually from 
+[here](https://drive.google.com/drive/folders/18b3NMpB9F8lXTvMrtFHyzmMCD4hE_d1R?usp=sharing), and replace the assets folder with the downloaded one or use 
+the script to do this automatically.
+
+```bash
+chmod +x ./scripts/download_assets.sh 
+./scripts/download_assets.sh 
+```
+
+In order to use the trained AI agent, similarly you can download the weights from [here](https://drive.google.com/drive/folders/1AFCSASPzFUkPk6xseTsKVdwC_a9HkIBj?usp=sharing)
+or use a script.
+
+```bash
+chmod +x ./scripts/download_weights.sh
+./scripts/download_weights.sh
+```
+
 ## How to Run
 
 In order to check the options for running the game type
