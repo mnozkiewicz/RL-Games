@@ -8,9 +8,8 @@ from ..players.base_player import BasePlayer
 from .gui import GameGui
 from .gui_config import GUIConfig
 
-# Players, agents and key_maps
+# Players and agents
 from ..players import HumanPlayer, AIPlayer
-from ..players.key_maps import get_game_key_map
 from ..agents.actor_critic import ActorCriticController
 
 # Game object factory
@@ -65,7 +64,7 @@ def main() -> None:
 
     # Game and GUI setup
     game, renderer = create_game_and_renderer(args.game, args.infinite)
-    key_map = get_game_key_map(args.game)
+    key_map = renderer.get_key_map()
     config = GUIConfig(
         pixel_height=args.pixel_size,
         pixel_width=args.pixel_size,

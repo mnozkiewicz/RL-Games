@@ -4,6 +4,7 @@ from .obstacle import Obstacle
 from ..base_pygame_renderer import BasePygameRenderer
 from pathlib import Path
 from typing import Optional, Tuple, Dict
+from collections import defaultdict
 
 
 class FlappyPygameRenderer(BasePygameRenderer[FlappyGame]):
@@ -139,3 +140,14 @@ class FlappyPygameRenderer(BasePygameRenderer[FlappyGame]):
                     int(obstacle.bottom * self.screen_height),
                 ),
             )
+
+    def get_key_map(self) -> Dict[int, int]:
+        return defaultdict(
+            lambda: -1,
+            {
+                pygame.K_DOWN: 0,
+                pygame.K_UP: 1,
+                pygame.K_s: 0,
+                pygame.K_w: 1,
+            },
+        )

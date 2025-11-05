@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pygame import Surface
-from typing import Generic
+from typing import Generic, Dict
 from .base_game import GameType
 
 
@@ -27,5 +27,14 @@ class BasePygameRenderer(ABC, Generic[GameType]):
     def draw(self, surface: Surface) -> None:
         """
         Draws the current state of self.game to the surface.
+        """
+        pass
+
+    @abstractmethod
+    def get_key_map(self) -> Dict[int, int]:
+        """
+        Get the function (in a form of a dictionary),
+        that maps players keyboard input to actions.
+        It is needed for a human player mode.
         """
         pass

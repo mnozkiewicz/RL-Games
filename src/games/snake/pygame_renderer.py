@@ -1,3 +1,5 @@
+from typing import Dict
+from collections import defaultdict
 import pygame
 from ...utils.colors import Color
 from .game import SnakeGame
@@ -143,4 +145,19 @@ class SnakePygameRenderer(BasePygameRenderer[SnakeGame]):
         surface.blit(
             self.rotate(self.tail, tail_angle),
             (tail.x * self.cell_width, tail.y * self.cell_height),
+        )
+
+    def get_key_map(self) -> Dict[int, int]:
+        return defaultdict(
+            lambda: -1,
+            {
+                pygame.K_UP: 0,
+                pygame.K_DOWN: 1,
+                pygame.K_LEFT: 2,
+                pygame.K_RIGHT: 3,
+                pygame.K_w: 0,
+                pygame.K_s: 1,
+                pygame.K_a: 2,
+                pygame.K_d: 3,
+            },
         )
