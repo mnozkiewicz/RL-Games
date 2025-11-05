@@ -5,7 +5,9 @@ from .base_pygame_renderer import BasePygameRenderer
 from .snake.game import SnakeGame
 from .snake.pygame_renderer import SnakePygameRenderer
 from .flappy_bird.game import FlappyGame
-from .flappy_bird.pygame_renderer import FlappyRenderer
+from .flappy_bird.pygame_renderer import FlappyPygameRenderer
+from .pacman.game import PacmanGame
+from .pacman.pygame_renderer import PacmanPygameRenderer
 
 
 def create_game_and_renderer(
@@ -20,7 +22,11 @@ def create_game_and_renderer(
         return snake_game, snake_renderer
     elif game_name == "flappy":
         flappy_game = FlappyGame(infinite=infinite)
-        flappy_renderer = FlappyRenderer(flappy_game)
+        flappy_renderer = FlappyPygameRenderer(flappy_game)
         return flappy_game, flappy_renderer
+    elif game_name == "pacman":
+        pacman_game = PacmanGame(infinite=infinite)
+        pacman_renderer = PacmanPygameRenderer(pacman_game)
+        return pacman_game, pacman_renderer
     else:
         raise ValueError(f"Unknown game: {game_name}")

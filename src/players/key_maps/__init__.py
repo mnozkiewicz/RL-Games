@@ -16,11 +16,27 @@ def get_game_key_map(game_name: str) -> Dict[int, int]:
         return snake_key_map
     elif game_name == "flappy":
         return flappy_key_map
+    elif game_name == "pacman":
+        return pacman_key_map
     else:
         raise ValueError(f"Unknown game: {game_name}")
 
 
 snake_key_map = defaultdict(
+    lambda: -1,
+    {
+        pygame.K_UP: 0,
+        pygame.K_DOWN: 1,
+        pygame.K_LEFT: 2,
+        pygame.K_RIGHT: 3,
+        pygame.K_w: 0,
+        pygame.K_s: 1,
+        pygame.K_a: 2,
+        pygame.K_d: 3,
+    },
+)
+
+pacman_key_map = defaultdict(
     lambda: -1,
     {
         pygame.K_UP: 0,

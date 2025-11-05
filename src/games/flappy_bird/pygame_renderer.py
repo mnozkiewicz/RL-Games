@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, Tuple, Dict
 
 
-class FlappyRenderer(BasePygameRenderer[FlappyGame]):
+class FlappyPygameRenderer(BasePygameRenderer[FlappyGame]):
     def __init__(self, game: FlappyGame):
         super().__init__(game)
 

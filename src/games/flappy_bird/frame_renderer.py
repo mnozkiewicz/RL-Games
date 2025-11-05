@@ -6,7 +6,7 @@ from typing import Optional
 import numpy as np
 
 
-class SnakeFrameRenderer(BaseFrameRenderer[FlappyGame]):
+class FlappyFrameRenderer(BaseFrameRenderer[FlappyGame]):
     def __init__(self, game: FlappyGame):
         super().__init__(game)
         self.bird_color = Color.RED

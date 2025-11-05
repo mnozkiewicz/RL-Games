@@ -26,7 +26,7 @@ def main() -> None:
         "--game",
         type=str,
         default="snake",
-        choices=["flappy", "snake"],
+        choices=["flappy", "snake", "pacman"],
         help="Which game to run.",
     )
     parser.add_argument(
