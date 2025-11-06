@@ -62,19 +62,26 @@ class PacmanGame(BaseGame):
             self.reset()
 
     def step(self, action_label: int) -> int:
+        action = label_to_action[action_label]
+
         self.__board.update_pacman_pos(self.pacman.get_pos())
         self.__board.update_ghosts_pos(
             [ghost.get_pos() for _, ghost in self.ghosts.items()]
         )
-        self.__board.compute_shortest_paths()
-
-        action = label_to_action[action_label]
 
         dir = action.to_dir()
         if dir is not None:
             self.pacman.change_dir(dir, self.board_view)
 
         self.pacman.step(self.board_view)
+        self.__board.compute_shortest_paths()
+
+        if self.__board.ghost(self.pacman.get_pos()):
+            self.end_episode()
+            return PacmanGame.DEATH_REWARD
+
+        for _, ghost in self.ghosts.items():
+            ghost.step(self.board_view)
 
         if self.__board.ghost(self.pacman.get_pos()):
             self.end_episode()
@@ -83,9 +90,6 @@ class PacmanGame(BaseGame):
         if self.__board.eat_food(self.pacman.get_pos()):
             self._score += 1
             return PacmanGame.FOOD_REWARD
-
-        for _, ghost in self.ghosts.items():
-            ghost.step(self.board_view)
 
         if self.__board.ghost(self.pacman.get_pos()):
             self.end_episode()

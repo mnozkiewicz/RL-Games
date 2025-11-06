@@ -21,3 +21,7 @@ dev = [
     "mypy>=1.18.2",
     "pre-commit>=4.3.0",
 ]
+
+[tool.mypy]
+strict = true
+warn_unused_ignores = true

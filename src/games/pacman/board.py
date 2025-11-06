@@ -60,15 +60,13 @@ class Board:
             return
 
         queue = deque([self.pacman_pos])
-        visit: set[Pos] = {queue[0]}
         parent: dict[Pos, Dir] = {queue[0]: Dir.UP}
         size = self.board_size()
         while queue:
             pos = queue.popleft()
             for dir in Dir:
                 new_pos = (pos + dir.vector()).mod_index(size)
-                if new_pos not in visit and not self.wall(new_pos):
-                    visit.add(new_pos)
+                if new_pos not in parent and not self.wall(new_pos):
                     parent[new_pos] = dir.opposite()
                     queue.append(new_pos)
 

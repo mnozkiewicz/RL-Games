@@ -21,23 +21,18 @@ class Ghost:
         possible_moves: List[Dir] = []
 
         for dir in Dir:
-            if not view.wall(self.compute_next_pos(dir, view)):
+            if (
+                not view.wall(self.compute_next_pos(dir, view))
+                and dir.opposite() != self._dir
+            ):
                 possible_moves.append(dir)
 
         to_pacman = view.get_shortest_path(self._pos)
-
-        new_dir = self._dir
-        if (
-            to_pacman is not None
-            and to_pacman in possible_moves
-            and uniform(0.0, 1.0) > 0.5
-        ):
-            new_dir = to_pacman
-        elif len(possible_moves) > 0:
-            new_dir = choice(possible_moves)
-
-        if new_dir != self._dir.opposite():
-            self._dir = new_dir
+        if len(possible_moves) > 0:
+            if to_pacman in possible_moves and uniform(0.0, 1.0) > 0.2:
+                self._dir = to_pacman
+            else:
+                self._dir = choice(possible_moves)
 
         next_pos = self.compute_next_pos(self._dir, view)
         self._pos = next_pos

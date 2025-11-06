@@ -76,17 +76,17 @@ class PacmanPygameRenderer(BasePygameRenderer[PacmanGame]):
                 if self.game.board_view.food(pos):
                     surface.blit(self.dot, (j * self.cell_width, i * self.cell_height))
 
-        for color, ghost in self.game.ghosts.items():
-            ghost_img = self.ghosts[color]
-            x, y = ghost.get_pos()
-            surface.blit(ghost_img, (y * self.cell_width, x * self.cell_height))
-
         x, y = self.game.pacman.get_pos()
         rotate_angle = self.game.pacman.get_dir().angle()
         surface.blit(
             self.rotate_pacman(self.pacman[self.pacman_state], rotate_angle),
             (y * self.cell_width, x * self.cell_height),
         )
+
+        for color, ghost in self.game.ghosts.items():
+            ghost_img = self.ghosts[color]
+            x, y = ghost.get_pos()
+            surface.blit(ghost_img, (y * self.cell_width, x * self.cell_height))
 
     def get_key_map(self) -> Dict[int, int]:
         return defaultdict(
