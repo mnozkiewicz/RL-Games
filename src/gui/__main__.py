@@ -63,7 +63,9 @@ def main() -> None:
     args = parser.parse_args()
 
     # Game and GUI setup
-    game, renderer = create_game_and_renderer(args.game, args.infinite)
+    game, renderer = create_game_and_renderer(
+        args.game, args.infinite, (args.player == "ai")
+    )
     key_map = renderer.get_key_map()
     config = GUIConfig(
         pixel_height=args.pixel_size,

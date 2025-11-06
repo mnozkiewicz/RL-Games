@@ -17,9 +17,12 @@ class SnakeGame(BaseGame):
     DEATH_REWARD = -500
     MOVE_REWARD = -1
 
-    def __init__(self, board_size: int, infinite: bool = True) -> None:
+    def __init__(
+        self, board_size: int, infinite: bool = True, is_ai_controlled: bool = False
+    ) -> None:
         self.board_size: int = board_size
-        self.infinte: bool = infinite
+        self.infinite: bool = infinite
+        self.is_ai_controlled = is_ai_controlled
 
         self.snake: Snake
         self._current_state_index: int
@@ -70,7 +73,7 @@ class SnakeGame(BaseGame):
             return SnakeGame.FOOD_REWARD
 
         elif self.snake.collision():
-            if not self.infinte:
+            if not self.infinite:
                 self._running = False
             else:
                 self.reset()

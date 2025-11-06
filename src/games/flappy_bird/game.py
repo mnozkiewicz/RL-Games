@@ -19,7 +19,10 @@ class FlappyGame(BaseGame):
     MOVE_REWARD = 1
     DEATH_REWARD = 0
 
-    def __init__(self, infinite: bool = True):
+    def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
+        self.infinite = infinite
+        self.is_ai_controlled = is_ai_controlled
+
         self.bird: Bird = Bird()
         self.obstacles: List[Obstacle] = []
         self._score = 0
@@ -27,8 +30,6 @@ class FlappyGame(BaseGame):
         self.obstacle_count = 0
 
         self._running: bool = True
-
-        self.infinite = infinite
         self.reset()
 
     def reset(self) -> None:

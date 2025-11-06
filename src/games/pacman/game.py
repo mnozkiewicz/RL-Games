@@ -21,9 +21,11 @@ class PacmanGame(BaseGame):
     FOOD_REWARD = 1
     MOVE_REWARD = 0
     DEATH_REWARD = -100
+    WIN_REWARD = 100
 
-    def __init__(self, infinite: bool = False) -> None:
+    def __init__(self, infinite: bool = False, is_ai_controlled: bool = False) -> None:
         self.infinite = infinite
+        self.is_ai_controlled = is_ai_controlled
 
         self.__board: Board
         self.board_view: BoardView
@@ -53,7 +55,19 @@ class PacmanGame(BaseGame):
         self._running = True
         self._score = 0
 
+    def end_episode(self) -> None:
+        if not self.infinite:
+            self._running = False
+        else:
+            self.reset()
+
     def step(self, action_label: int) -> int:
+        self.__board.update_pacman_pos(self.pacman.get_pos())
+        self.__board.update_ghosts_pos(
+            [ghost.get_pos() for _, ghost in self.ghosts.items()]
+        )
+        self.__board.compute_shortest_paths()
+
         action = label_to_action[action_label]
 
         dir = action.to_dir()
@@ -62,6 +76,10 @@ class PacmanGame(BaseGame):
 
         self.pacman.step(self.board_view)
 
+        if self.__board.ghost(self.pacman.get_pos()):
+            self.end_episode()
+            return PacmanGame.DEATH_REWARD
+
         if self.__board.eat_food(self.pacman.get_pos()):
             self._score += 1
             return PacmanGame.FOOD_REWARD
@@ -69,10 +87,18 @@ class PacmanGame(BaseGame):
         for _, ghost in self.ghosts.items():
             ghost.step(self.board_view)
 
+        if self.__board.ghost(self.pacman.get_pos()):
+            self.end_episode()
+            return PacmanGame.DEATH_REWARD
+
+        if self.__board.food_empty():
+            self.end_episode()
+            return PacmanGame.WIN_REWARD
+
         return PacmanGame.MOVE_REWARD
 
     def is_running(self) -> bool:
-        return True
+        return self._running
 
     @property
     def number_of_moves(self) -> int:

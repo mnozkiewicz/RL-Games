@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Generator
+from random import choice
 
 
 @dataclass(frozen=True, eq=True)
@@ -61,6 +62,10 @@ class Dir(Enum):
                 return Dir.RIGHT
             case Dir.RIGHT:
                 return Dir.LEFT
+
+    @classmethod
+    def random_dir(cls) -> Dir:
+        return choice(list(Dir))
 
 
 class Action(Enum):
