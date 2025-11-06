@@ -1,6 +1,26 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Optional, Generator
+
+
+@dataclass(frozen=True, eq=True)
+class Pos:
+    x: int
+    y: int
+
+    def __add__(self, other: Pos) -> Pos:
+        return Pos(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other: Pos) -> Pos:
+        return Pos(self.x - other.x, self.y - other.y)
+
+    def mod_index(self, size: int) -> Pos:
+        return Pos(self.x % size, self.y % size)
+
+    def __iter__(self) -> Generator[int, None, None]:
+        yield self.x
+        yield self.y
 
 
 class Dir(Enum):
@@ -9,16 +29,16 @@ class Dir(Enum):
     LEFT = "LEFT"
     RIGHT = "RIGHT"
 
-    def to_vector(self) -> Tuple[int, int]:
+    def vector(self) -> Pos:
         match self:
             case Dir.UP:
-                return (-1, 0)
+                return Pos(-1, 0)
             case Dir.DOWN:
-                return (1, 0)
+                return Pos(1, 0)
             case Dir.LEFT:
-                return (0, -1)
+                return Pos(0, -1)
             case Dir.RIGHT:
-                return (0, 1)
+                return Pos(0, 1)
 
     def angle(self) -> int:
         match self:

@@ -1,25 +1,39 @@
-from typing import Tuple
-from .utils import Dir
+from .utils import Dir, Pos
+from .board import BoardView
+from typing import Optional
 
 
 class Pacman:
-    def __init__(self, start_pos: Tuple[int, int], board_size: int):
-        self._x = start_pos[0]
-        self._y = start_pos[1]
-
+    def __init__(self, start_pos: Pos, board_size: int):
+        self._pos = start_pos
         self._dir = Dir.UP
         self.board_size = board_size
+        self._queued_move: Optional[Dir] = None
 
-    def get_pos(self) -> Tuple[int, int]:
-        return self._x, self._y
+    def get_pos(self) -> Pos:
+        return self._pos
 
     def get_dir(self) -> Dir:
         return self._dir
 
-    def change_dir(self, dir: Dir) -> None:
-        self._dir = dir
+    def compute_next_pos(self, dir: Optional[Dir] = None) -> Pos:
+        if dir is None:
+            dir = self._dir
+        return (self._pos + dir.vector()).mod_index(self.board_size)
 
-    def move(self) -> None:
-        shift_x, shift_y = self._dir.to_vector()
-        self._x = (self._x + shift_x) % self.board_size
-        self._y = (self._y + shift_y) % self.board_size
+    def change_dir(self, dir: Dir, board: BoardView) -> None:
+        self._queued_move = None
+
+        next_pos = self.compute_next_pos(dir)
+        if not board.wall(next_pos):
+            self._dir = dir
+        else:
+            self._queued_move = dir
+
+    def step(self, board: BoardView) -> None:
+        if self._queued_move is not None:
+            self.change_dir(self._queued_move, board)
+
+        next_pos = self.compute_next_pos()
+        if not board.wall(next_pos):
+            self._pos = next_pos

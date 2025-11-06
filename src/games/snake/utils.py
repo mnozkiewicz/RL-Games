@@ -1,10 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, Generator
 import numpy as np
 from numpy.typing import NDArray
-from typing import Generator
 
 
 @dataclass(frozen=True, eq=True)

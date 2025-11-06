@@ -1,7 +1,11 @@
 import numpy as np
 from ..base_game import BaseGame
-from .utils import Action, Dir
+from .utils import Action, Dir, Pos
 from .pacman import Pacman
+from .board import Board, BoardView
+from .ghost import Ghost
+from typing import Dict
+from .map_prep.board import board_init
 
 
 label_to_action = {
@@ -13,21 +17,21 @@ label_to_action = {
 }
 
 
-def load_board(path: str) -> np.ndarray:
-    with open(path, "rb") as f:
-        array: np.ndarray = np.load(f)
-    return array
-
-
 class PacmanGame(BaseGame):
-    REWARD = 0
+    FOOD_REWARD = 1
+    MOVE_REWARD = 0
+    DEATH_REWARD = -100
 
     def __init__(self, infinite: bool = False) -> None:
         self.infinite = infinite
-        self.board = load_board("assets/pacman/board.npy")
-        self.board_size = self.board.shape[0]
+
+        self.__board: Board
+        self.board_view: BoardView
+        self.board_size: int
 
         self.pacman: Pacman
+        self.ghosts: Dict[str, Ghost]
+
         self._queued_move: Dir
         self._running: bool
         self._score: int
@@ -35,8 +39,17 @@ class PacmanGame(BaseGame):
         self.reset()
 
     def reset(self) -> None:
-        self.pacman = Pacman((2, 11), self.board_size)
-        self._queued_move = self.pacman.get_dir()
+        self.__board = Board(board_init())
+        self.board_view = BoardView(self.__board)
+        self.board_size = self.__board.board_size()
+        self.pacman = Pacman(Pos(2, 11), self.board_size)
+        self.ghosts = {
+            "cyan": Ghost("cyan", Pos(11, 9)),
+            "orange": Ghost("orange", Pos(11, 10)),
+            "pink": Ghost("pink", Pos(11, 12)),
+            "red": Ghost("red", Pos(11, 13)),
+        }
+
         self._running = True
         self._score = 0
 
@@ -45,23 +58,18 @@ class PacmanGame(BaseGame):
 
         dir = action.to_dir()
         if dir is not None:
-            self._queued_move = dir
+            self.pacman.change_dir(dir, self.board_view)
 
-        dir = self._queued_move
-        pacman_dir = self.pacman.get_dir()
+        self.pacman.step(self.board_view)
 
-        if dir != pacman_dir:
-            cur_x, cur_y = self.pacman.get_pos()
-            shift_x, shift_y = dir.to_vector()
-            new_x, new_y = (
-                (cur_x + shift_x) % self.board_size,
-                (cur_y + shift_y) % self.board_size,
-            )
+        if self.__board.eat_food(self.pacman.get_pos()):
+            self._score += 1
+            return PacmanGame.FOOD_REWARD
 
-            if self.board[new_x, new_y]:
-                pass
+        for _, ghost in self.ghosts.items():
+            ghost.step(self.board_view)
 
-        return PacmanGame.REWARD
+        return PacmanGame.MOVE_REWARD
 
     def is_running(self) -> bool:
         return True
