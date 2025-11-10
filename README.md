@@ -21,7 +21,7 @@ Assets are just images for every game used in pygame.
 Weights are the parameters of the rl-agents trained to play the games.
 
 In order to and start pygame gui (instructions for this below), you either need to download assets manually from 
-[here](https://drive.google.com/drive/folders/18b3NMpB9F8lXTvMrtFHyzmMCD4hE_d1R?usp=sharing), and replace the assets folder with the downloaded one or use 
+[here](https://drive.google.com/drive/folders/1-DI5GME0B-mXaPTMFrztL4_QGkS5c8Z-?usp=sharing), and replace the assets folder with the downloaded one or use 
 the script to do this automatically.
 
 ```bash
@@ -29,7 +29,7 @@ chmod +x ./scripts/download_assets.sh
 ./scripts/download_assets.sh 
 ```
 
-In order to use the trained AI agent, similarly you can download the weights from [here](https://drive.google.com/drive/folders/1AFCSASPzFUkPk6xseTsKVdwC_a9HkIBj?usp=sharing)
+In order to use the trained AI agent, similarly you can download the weights from [here](https://drive.google.com/drive/folders/1ipfmVhNCz0rPMONkiApoQe1Dr399gu04?usp=sharing)
 or use a script.
 
 ```bash
