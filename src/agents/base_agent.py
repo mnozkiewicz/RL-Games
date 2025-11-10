@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
 
@@ -7,14 +8,12 @@ class BaseAgent(ABC):
     An abstract base class (ABC) for a reinforcement learning agent.
     """
 
-    def __init__(self, state_space_shape: int, action_space_size: int) -> None:
+    def __init__(self) -> None:
         """
         Initializes the agent.
         The agent is by default set to training mode.
         """
         super().__init__()
-        self.state_space_shape = state_space_shape
-        self.action_space_size = action_space_size
         self.eval_mode = False
 
     @abstractmethod
@@ -30,7 +29,7 @@ class BaseAgent(ABC):
         self,
         state: np.ndarray,
         action: int,
-        reward: int,
+        reward: float,
         next_state: np.ndarray,
         terminal: bool,
     ) -> None:
@@ -52,4 +51,4 @@ class BaseAgent(ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, path: str, device: str = "cpu") -> "BaseAgent": ...
+    def load_model(cls, path: str, device: str = "cpu") -> BaseAgent: ...

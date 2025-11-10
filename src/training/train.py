@@ -1,5 +1,5 @@
 from torch import optim
-from ..agents.actor_critic import ActorCriticController
+from ..agents.actor_critic import ActorCriticAgent
 from ..agents.base_agent import BaseAgent
 from ..games.base_game import BaseGame
 from ..games.create_game_engine import create_game
@@ -112,7 +112,7 @@ def main() -> None:
         "--game",
         type=str,
         default="snake",
-        choices=["flappy", "snake"],
+        choices=["flappy", "snake", "pacman"],
         help="Which game to run.",
     )
     parser.add_argument(
@@ -147,7 +147,7 @@ def main() -> None:
     game = create_game(args.game, infinite=False)
 
     # Create game agent
-    actor_critic_agent = ActorCriticController(
+    actor_critic_agent = ActorCriticAgent(
         state_space_shape=game.processed_state().shape[0],
         action_space_size=game.number_of_moves,
         batch_size=args.batch_size,

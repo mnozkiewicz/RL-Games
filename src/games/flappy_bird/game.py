@@ -76,7 +76,7 @@ class FlappyGame(BaseGame):
     def is_running(self) -> bool:
         return self._running
 
-    def processed_state(self) -> np.ndarray:  # TODO: implement state processing
+    def processed_state(self) -> np.ndarray:
         features: List[float] = []
         for obstacle in self.obstacles:
             if obstacle.x + obstacle.width > self.bird.x:

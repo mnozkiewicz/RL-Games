@@ -18,10 +18,10 @@ label_to_action = {
 
 
 class PacmanGame(BaseGame):
-    FOOD_REWARD = 1
-    MOVE_REWARD = 0
-    DEATH_REWARD = -100
-    WIN_REWARD = 100
+    FOOD_REWARD = 10
+    MOVE_REWARD = -1
+    DEATH_REWARD = -1000
+    WIN_REWARD = 1000
 
     def __init__(self, infinite: bool = False, is_ai_controlled: bool = False) -> None:
         self.infinite = infinite
@@ -44,7 +44,7 @@ class PacmanGame(BaseGame):
         self.__board = Board(board_init())
         self.board_view = BoardView(self.__board)
         self.board_size = self.__board.board_size()
-        self.pacman = Pacman(Pos(2, 11), self.board_size)
+        self.pacman = Pacman(Pos(2, 11), self.board_size, self.is_ai_controlled)
         self.ghosts = {
             "cyan": Ghost("cyan", Pos(11, 9)),
             "orange": Ghost("orange", Pos(11, 10)),
@@ -115,4 +115,38 @@ class PacmanGame(BaseGame):
         return "PACMAN"
 
     def processed_state(self) -> np.ndarray:
-        return np.zeros([1, 2, 3], dtype=np.float32).flatten()
+        x, y = self.pacman.get_pos()
+        dir = self.pacman.get_dir()
+
+        pacman_vect: list[float] = [
+            x,
+            y,
+            float(dir == Dir.UP),  # up
+            float(dir == Dir.DOWN),  # down
+            float(dir == Dir.LEFT),  # left
+            float(dir == Dir.RIGHT),  # right
+        ]
+
+        ghost_vectors: list[float] = []
+        for _, ghost in sorted(self.ghosts.items()):
+            x, y = ghost.get_pos()
+            dir = ghost.get_dir()
+            ghost_vectors.extend(
+                [
+                    x,
+                    y,
+                    float(dir == Dir.UP),  # up
+                    float(dir == Dir.DOWN),  # down
+                    float(dir == Dir.LEFT),  # left
+                    float(dir == Dir.RIGHT),  # right
+                ]
+            )
+
+        return np.concatenate(
+            (
+                np.array(pacman_vect),
+                np.array(ghost_vectors),
+                self.__board.board.flatten().copy(),
+            ),
+            dtype=np.float32,
+        ).flatten()

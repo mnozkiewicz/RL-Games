@@ -34,7 +34,7 @@ class BaseGame(ABC):
         ...
 
     @abstractmethod
-    def step(self, action_label: int) -> int:
+    def step(self, action_label: int) -> float:
         """
         Performs one time step of the game logic given a list of actions.
         Returns the reward (or score change) obtained from performing the action(s).

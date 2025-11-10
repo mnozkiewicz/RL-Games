@@ -10,7 +10,7 @@ from .gui_config import GUIConfig
 
 # Players and agents
 from ..players import HumanPlayer, AIPlayer
-from ..agents.actor_critic import ActorCriticController
+from ..agents.actor_critic import ActorCriticAgent
 
 # Game object factory
 from ..games.create_game_and_renderer import create_game_and_renderer
@@ -25,7 +25,7 @@ def main() -> None:
         "--game",
         type=str,
         default="snake",
-        choices=["flappy", "snake", "pacman"],
+        choices=["flappy", "snake", "pacman", "tetris"],
         help="Which game to run.",
     )
     parser.add_argument(
@@ -85,10 +85,10 @@ def main() -> None:
             if not Path(model_path).exists():
                 raise ValueError(f"There is no model in path {model_path}")
             print(f"Loading AI model from {model_path}...")
-            agent = ActorCriticController.load_model(model_path)
+            agent = ActorCriticAgent.load_model(model_path)
         else:
-            agent = ActorCriticController(
-                game.processed_state().shape[0],
+            agent = ActorCriticAgent(
+                game.processed_state().shape,
                 game.number_of_moves,
                 hidden_layer_sizes=(64, 64),
             )

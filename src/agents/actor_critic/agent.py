@@ -6,19 +6,19 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 import numpy as np
-from typing import Optional, Any, Type, Tuple, List, Dict
+from typing import Optional, Any, Type, Tuple, List, Dict, Union
 from .trajectory_buffer import TrajectoryBuffer
 from ..base_agent import BaseAgent
 
 
-class ActorCriticController(BaseAgent, nn.Module):
+class ActorCriticAgent(BaseAgent, nn.Module):
     """
     Actor-Critic agent for reinforcement learning.
     """
 
     def __init__(
         self,
-        state_space_shape: int,
+        state_space_shape: Union[Tuple[int, ...], int],
         action_space_size: int,
         hidden_layer_sizes: Tuple[int, ...] = (256, 256),
         batch_size: int = 64,
@@ -28,7 +28,17 @@ class ActorCriticController(BaseAgent, nn.Module):
         optimizer: Optional[Type[optim.Optimizer]] = None,
         optimizer_kwargs: Optional[dict[str, Any]] = None,
     ) -> None:
-        super().__init__(state_space_shape, action_space_size)
+        super().__init__()
+
+        if isinstance(state_space_shape, tuple):
+            assert len(state_space_shape) == 1, (
+                "For Actor Critic Agent state_space_shape can be either an integer or one-element tuple"
+            )
+            state_space_shape = state_space_shape[0]
+
+        self.state_space_shape = state_space_shape
+        self.action_space_size = action_space_size
+        self.eval_mode = False
 
         # Agent hyperparameters
         self.hidden_layer_sizes = hidden_layer_sizes
@@ -37,6 +47,7 @@ class ActorCriticController(BaseAgent, nn.Module):
         self.epsilon = epsilon
 
         # Buffer to store trajectories before batch updates
+        assert batch_size >= 2, "Size of batch should be at least 2"
         self.trajectory_buffer = TrajectoryBuffer(batch_size)
 
         # Create actor and critic networks
@@ -181,9 +192,9 @@ class ActorCriticController(BaseAgent, nn.Module):
                 raise RuntimeError("Error while computing the distribution")
 
             # Computing difference between critics_evaluation and bootstrapped evaluation
-            difference = rewards_tensor + remaining_reward - critics_evaluation
-            critics_loss = difference.square()  # MSE for critic
-            actors_loss = -difference.detach() * log_probs.reshape(
+            advantage = rewards_tensor + remaining_reward - critics_evaluation
+            critics_loss = advantage.square()  # MSE for critic
+            actors_loss = -advantage.detach() * log_probs.reshape(
                 -1, 1
             )  # Policy gradient
 
@@ -226,7 +237,7 @@ class ActorCriticController(BaseAgent, nn.Module):
         torch.save(self.model.to("cpu").state_dict(), os.path.join(path, "model.pth"))
 
     @classmethod
-    def load_model(cls, path: str, device: str = "cpu") -> ActorCriticController:
+    def load_model(cls, path: str, device: str = "cpu") -> ActorCriticAgent:
         """
         Load a model from disk.
         Recreates the architecture using config.json and loads the trained weights.

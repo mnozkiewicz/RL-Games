@@ -1,3 +1,3 @@
-from .agent import ActorCriticController
+from .agent import ActorCriticAgent
 
-__all__ = ["ActorCriticController"]
+__all__ = ["ActorCriticAgent"]

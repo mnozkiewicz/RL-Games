@@ -4,7 +4,8 @@ from typing import Optional
 
 
 class Pacman:
-    def __init__(self, start_pos: Pos, board_size: int):
+    def __init__(self, start_pos: Pos, board_size: int, is_ai_controlled: bool):
+        self.is_ai_controlled = is_ai_controlled
         self._pos = start_pos
         self._dir = Dir.UP
         self.board_size = board_size
@@ -27,7 +28,7 @@ class Pacman:
         next_pos = self.compute_next_pos(dir)
         if not board.wall(next_pos):
             self._dir = dir
-        else:
+        elif not self.is_ai_controlled:
             self._queued_move = dir
 
     def step(self, board: BoardView) -> None:

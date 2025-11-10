@@ -33,7 +33,7 @@ class AIPlayer(BasePlayer):
         self,
         state: np.ndarray,
         action: int,
-        reward: int,
+        reward: float,
         next_state: np.ndarray,
         terminal: bool,
     ) -> None:

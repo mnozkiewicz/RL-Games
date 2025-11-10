@@ -32,8 +32,12 @@ class Snake:
     def board(self) -> np.ndarray:
         return self._board
 
-    def move(self) -> None:
-        next_pos = (self._head + self._dir.vector()).mod_index(self._board_size)
+    def move(self) -> bool:
+        next_pos = self._head + self._dir.vector()  # .mod_index(self._board_size)
+        if not (0 <= next_pos.x < self._board_size) or not (
+            0 <= next_pos.y < self._board_size
+        ):
+            return True
         self._head = next_pos
 
         # Add new position
@@ -43,6 +47,7 @@ class Snake:
         # Remove last position
         self._last_pos = self._tail.pop()
         self._board[*self._last_pos] -= 1
+        return False
 
     def turn(self, dir: Optional[Dir]) -> None:
         if dir is not None:

@@ -1,3 +1,7 @@
 ☐ Add ability to pass custom rewards
-☐ Implement PacMan
+☐ Add more things to pacman
+☐ Add option to play snake without walls
 ☐ Implement DQN agent
+☐ Add dvc for handling models and assets
+☐ Add mlflow for experiments
+☐ Implement tetris

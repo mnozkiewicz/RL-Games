@@ -8,6 +8,8 @@ from .flappy_bird.game import FlappyGame
 from .flappy_bird.pygame_renderer import FlappyPygameRenderer
 from .pacman.game import PacmanGame
 from .pacman.pygame_renderer import PacmanPygameRenderer
+from .tetris.game import TetrisGame
+from .tetris.pygame_renderer import TetrisPygameRenderer
 
 
 def create_game_and_renderer(
@@ -30,5 +32,9 @@ def create_game_and_renderer(
         pacman_game = PacmanGame(infinite=infinite, is_ai_controlled=is_ai_controlled)
         pacman_renderer = PacmanPygameRenderer(pacman_game)
         return pacman_game, pacman_renderer
+    elif game_name == "tetris":
+        tetris_game = TetrisGame(infinite=infinite, is_ai_controlled=is_ai_controlled)
+        tetris_renderer = TetrisPygameRenderer(tetris_game)
+        return tetris_game, tetris_renderer
     else:
         raise ValueError(f"Unknown game: {game_name}")

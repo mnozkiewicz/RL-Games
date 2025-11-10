@@ -13,9 +13,9 @@ label_to_action = {
 
 
 class SnakeGame(BaseGame):
-    FOOD_REWARD = 50
-    DEATH_REWARD = -500
-    MOVE_REWARD = -1
+    FOOD_REWARD = 0.1
+    DEATH_REWARD = -1.0
+    MOVE_REWARD = -0.001
 
     def __init__(
         self, board_size: int, infinite: bool = True, is_ai_controlled: bool = False
@@ -55,7 +55,13 @@ class SnakeGame(BaseGame):
     def score(self) -> int:
         return self._score
 
-    def step(self, action_label: int) -> int:
+    def end_game(self) -> None:
+        if not self.infinite:
+            self._running = False
+        else:
+            self.reset()
+
+    def step(self, action_label: int) -> float:
         if not self._running:
             return SnakeGame.DEATH_REWARD
 
@@ -66,17 +72,18 @@ class SnakeGame(BaseGame):
         if action != Action.NOTHING:
             self.snake.turn(action.to_dir())
 
-        self.snake.move()
+        wall_collision = self.snake.move()
+        if wall_collision:
+            self.end_game()
+            return SnakeGame.DEATH_REWARD
+
         if self.snake.eat_food(self._food):
             self._score += 1
             self.draw_new_food()
             return SnakeGame.FOOD_REWARD
 
         elif self.snake.collision():
-            if not self.infinite:
-                self._running = False
-            else:
-                self.reset()
+            self.end_game()
             return SnakeGame.DEATH_REWARD
         else:
             return SnakeGame.MOVE_REWARD
@@ -124,10 +131,13 @@ class SnakeGame(BaseGame):
 
             for i in range(window_size):
                 for j in range(window_size):
-                    x = (head_x - half_w + i) % board_size
-                    y = (head_y - half_w + j) % board_size
+                    x = head_x - half_w + i
+                    y = head_y - half_w + j
 
-                    if state.board[x, y] >= 1:
+                    # Check if this position is outside the board
+                    if x < 0 or x >= board_size or y < 0 or y >= board_size:
+                        window[i, j] = 2.0  # wall
+                    elif state.board[x, y] >= 1:
                         window[i, j] = 1.0  # body
                     elif (x, y) == (food_x, food_y):
                         window[i, j] = -1.0  # food
@@ -144,23 +154,26 @@ class SnakeGame(BaseGame):
         local_view = get_local_window(state, 5)
 
         def danger_in_direction(dx: int, dy: int) -> float:
-            x = (head_x + dx) % board_size
-            y = (head_y + dy) % board_size
-            return 1.0 if state.board[x, y] >= 1 else 0.0
+            x = head_x + dx
+            y = head_y + dy
+
+            # Check wall or body collision
+            if x < 0 or x >= board_size or y < 0 or y >= board_size:
+                return 1.0  # wall danger
+            elif state.board[x, y] >= 1:
+                return 1.0  # body danger
+            else:
+                return 0.0
 
         food_x, food_y = state.food
-        dx = (food_x - head_x + board_size) % board_size
-        dy = (food_y - head_y + board_size) % board_size
-        if dx > board_size / 2:
-            dx -= board_size
-        if dy > board_size / 2:
-            dy -= board_size
+        dx = food_x - head_x
+        dy = food_y - head_y
 
         relational = np.array(
             [
-                float(head_x) / self.board_size,  # Head pos
-                float(head_y) / self.board_size,
-                self.snake.length(),  # Snakes length
+                float(head_x) / board_size,  # Head pos
+                float(head_y) / board_size,
+                len(state.tail),  # Snake length
                 danger_in_direction(dir_x, dir_y),
                 danger_in_direction(-dir_y, dir_x),
                 danger_in_direction(dir_y, -dir_x),
@@ -178,3 +191,13 @@ class SnakeGame(BaseGame):
         )
 
         return np.concatenate((relational, local_view))
+
+    def entire_state(self) -> np.ndarray:
+        state = np.zeros((1, *self.snake.board().shape), dtype=np.float32)
+
+        for pos in self.snake.tail():
+            state[0][*pos] = 1.0
+
+        state[0][*self.snake.head()] = 1.0
+        state[0][*self._food] = -1.0
+        return state
