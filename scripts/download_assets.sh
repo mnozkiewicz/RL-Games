@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-ASSETS_LINK="https://drive.google.com/drive/folders/18b3NMpB9F8lXTvMrtFHyzmMCD4hE_d1R?usp=sharing"
+ASSETS_LINK="https://drive.google.com/drive/folders/1-DI5GME0B-mXaPTMFrztL4_QGkS5c8Z-?usp=sharing"
 TARGET_DIR="./assets"
 
 echo "Downloading assets from Google Drive..."

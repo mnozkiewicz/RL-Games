@@ -2,7 +2,7 @@
 #!/usr/bin/env bash
 set -e
 
-WEIGHTS_LINK="https://drive.google.com/drive/folders/1AFCSASPzFUkPk6xseTsKVdwC_a9HkIBj?usp=sharing"
+WEIGHTS_LINK="https://drive.google.com/drive/folders/1ipfmVhNCz0rPMONkiApoQe1Dr399gu04?usp=sharing"
 TARGET_DIR="./weights"
 
 echo "Downloading weights from Google Drive..."
