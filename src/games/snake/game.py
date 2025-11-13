@@ -13,9 +13,9 @@ label_to_action = {
 
 
 class SnakeGame(BaseGame):
-    FOOD_REWARD = 0.1
-    DEATH_REWARD = -1.0
-    MOVE_REWARD = -0.001
+    FOOD_REWARD = 10.0
+    DEATH_REWARD = -500.0
+    MOVE_REWARD = -0.1
 
     def __init__(
         self, board_size: int, infinite: bool = True, is_ai_controlled: bool = False

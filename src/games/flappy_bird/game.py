@@ -16,8 +16,8 @@ label_to_action = {
 
 class FlappyGame(BaseGame):
     OBSTACLE_TIME_SPAWN = 50
-    MOVE_REWARD = 1
-    DEATH_REWARD = 0
+    MOVE_REWARD = 0.1
+    DEATH_REWARD = -1.0
 
     def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
         self.infinite = infinite
@@ -41,14 +41,14 @@ class FlappyGame(BaseGame):
 
         self._running = True
 
-    def death(self) -> int:
+    def death(self) -> float:
         if self.infinite:
             self.reset()
         else:
             self._running = False
         return FlappyGame.DEATH_REWARD
 
-    def step(self, action_label: int) -> int:
+    def step(self, action_label: int) -> float:
         action = label_to_action[action_label]
         self.bird.step(action)
 

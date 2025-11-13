@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 import numpy as np
-from typing import Optional, Any, Type, Tuple, List, Dict, Union
+from typing import Optional, Any, Type, Tuple, List, Dict, Union, Literal
 from .trajectory_buffer import TrajectoryBuffer
 from ..base_agent import BaseAgent
 
@@ -27,14 +27,32 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         device: str = "cpu",
         optimizer: Optional[Type[optim.Optimizer]] = None,
         optimizer_kwargs: Optional[dict[str, Any]] = None,
+        input_type: Literal["raw_pixels", "processed_state"] = "processed_state",
     ) -> None:
         super().__init__()
 
-        if isinstance(state_space_shape, tuple):
-            assert len(state_space_shape) == 1, (
-                "For Actor Critic Agent state_space_shape can be either an integer or one-element tuple"
-            )
-            state_space_shape = state_space_shape[0]
+        if input_type == "processed_state":
+            if isinstance(state_space_shape, tuple):
+                assert len(state_space_shape) == 1, (
+                    "For Actor Critic Agent with `input_type` == `processed_state`"
+                    "state_space_shape can be either an integer or one-element tuple"
+                )
+            else:
+                state_space_shape = (state_space_shape,)
+            # Create actor and critic networks
+            self.model = self._create_networks(
+                *state_space_shape, hidden_layer_sizes, action_space_size
+            ).to(device)
+
+        else:
+            raise NotImplementedError("Yet to implement the raw pixels version")
+            # assert isinstance(state_space_shape, tuple) and len(state_space_shape) == 3, (
+            #     "For Actor Critic Agent with `input_type` == `processed_state`"
+            #     "state_space_shape can be either an integer or one-element tuple"
+            # )
+            # self.model = self._create_networks(
+            #     state_space_shape[0], hidden_layer_sizes, action_space_size
+            # ).to(device)
 
         self.state_space_shape = state_space_shape
         self.action_space_size = action_space_size
@@ -49,11 +67,6 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         # Buffer to store trajectories before batch updates
         assert batch_size >= 2, "Size of batch should be at least 2"
         self.trajectory_buffer = TrajectoryBuffer(batch_size)
-
-        # Create actor and critic networks
-        self.model = self._create_networks(
-            state_space_shape, hidden_layer_sizes, action_space_size
-        ).to(device)
 
         # Set optimizer
         if optimizer_kwargs is None:
@@ -95,7 +108,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
 
         for hidden_size in hidden_layer_sizes:
             critic_layers.append(nn.Linear(in_features, hidden_size))
-            actor_layers.append(nn.LayerNorm(hidden_size))  # LayerNorm for stability
+            critic_layers.append(nn.LayerNorm(hidden_size))  # LayerNorm for stability
             critic_layers.append(nn.ReLU())
             in_features = hidden_size
 
@@ -109,7 +122,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         Choose an action given a state.
         """
         state_tensor = (
-            torch.tensor(state).reshape(1, self.state_space_shape).to(self.device)
+            torch.tensor(state).reshape(1, *self.state_space_shape).to(self.device)
         )
 
         with torch.no_grad():
