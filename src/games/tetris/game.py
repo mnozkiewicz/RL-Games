@@ -1,11 +1,15 @@
 import numpy as np
 from ..base_game import BaseGame
+from .shapes import LShape
 
 
 class TetrisGame(BaseGame):
     def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
+
+        self.board = np.zeros((20, 10))
+        self.cur_shape = LShape(0, 4)
 
         self._running: bool = True
         self.reset()

@@ -260,6 +260,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         with open(os.path.join(path, "config.json"), "r") as f:
             config = json.load(f)
 
+        config["state_space_shape"] = tuple(config["state_space_shape"])
         config["hidden_layer_sizes"] = tuple(config["hidden_layer_sizes"])
         agent = cls(device=device, **config)
 

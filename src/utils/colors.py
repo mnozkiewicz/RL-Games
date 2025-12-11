@@ -6,5 +6,6 @@ class Color:
     STRONGGREEN = (11, 128, 58)
     RED = (255, 0, 0)
     BLUE = (0, 0, 255)
+    LIGHTBLUE = (7, 205, 245)
     YELLOW = (255, 255, 0)
     DARKYELLOW = (116, 130, 7)

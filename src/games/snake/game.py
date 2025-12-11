@@ -18,11 +18,16 @@ class SnakeGame(BaseGame):
     MOVE_REWARD = -0.1
 
     def __init__(
-        self, board_size: int, infinite: bool = True, is_ai_controlled: bool = False
+        self,
+        board_size: int,
+        infinite: bool = True,
+        is_ai_controlled: bool = False,
+        wall_collision_on: bool = False,
     ) -> None:
         self.board_size: int = board_size
         self.infinite: bool = infinite
         self.is_ai_controlled = is_ai_controlled
+        self.wall_collision_on = wall_collision_on
 
         self.snake: Snake
         self._current_state_index: int
@@ -36,7 +41,12 @@ class SnakeGame(BaseGame):
         self.reset()
 
     def reset(self) -> None:
-        self.snake = Snake(self.board_size // 2, self.board_size // 2, self.board_size)
+        self.snake = Snake(
+            self.board_size // 2,
+            self.board_size // 2,
+            self.board_size,
+            self.wall_collision_on,
+        )
         self._current_state_index = 0
         self._last_computed_state = 0
         self._running = True

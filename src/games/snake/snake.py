@@ -6,11 +6,12 @@ from numpy.typing import NDArray
 
 
 class Snake:
-    def __init__(self, x: int, y: int, board_size: int):
+    def __init__(self, x: int, y: int, board_size: int, wall_collision_on: bool):
         self._head: Pos = Pos(x, y)
         self._tail: deque[Pos] = deque([self._head])
         self._last_pos: Pos = Pos(x, y)
         self._board_size: int = board_size
+        self._wall_collision_on = wall_collision_on
 
         self._board: NDArray[np.int_] = np.full((board_size, board_size), 0)
         self._board[x, y] = 1
@@ -34,10 +35,13 @@ class Snake:
 
     def move(self) -> bool:
         next_pos = self._head + self._dir.vector()  # .mod_index(self._board_size)
-        if not (0 <= next_pos.x < self._board_size) or not (
-            0 <= next_pos.y < self._board_size
-        ):
-            return True
+        if not self._wall_collision_on:
+            next_pos = next_pos.mod_index(self._board_size)
+        else:
+            if not (0 <= next_pos.x < self._board_size) or not (
+                0 <= next_pos.y < self._board_size
+            ):
+                return True
         self._head = next_pos
 
         # Add new position

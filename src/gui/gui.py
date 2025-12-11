@@ -10,7 +10,7 @@ from typing import List
 
 class GameGui:
     """
-    Manages the main game window, event loop, and visualization.
+    Manages the main game window_screene_screen, event loop, and visualization.
     """
 
     def __init__(
@@ -26,7 +26,7 @@ class GameGui:
                 for drawing the game.
             game: An instance of BaseGame subclass containing the
                 game's logic.
-            config: A GUIConfig object with settings like window size
+            config: A GUIConfig object with settings like window_screene_screen size
                 and frame rate.
             player: An instance of BasePlayer subclass that will
                 decide on actions.
@@ -38,15 +38,13 @@ class GameGui:
         self.player = player
 
         # Pygame State Variables
-        self.slider = Slider(
-            self.config.frame_rate, self.config.pixel_width, self.config.pixel_height
-        )
+        self.slider: Slider
         self.running: bool  # Controls the main game loop
 
     def check_if_quit(self, events: List[pygame.event.Event]) -> None:
         """
         Scans a list of events and sets self.running to False if
-        a QUIT event (like closing the window) is found.
+        a QUIT event (like closing the window_screene_screen) is found.
         """
         for event in events:
             if event.type == pygame.QUIT:
@@ -57,8 +55,6 @@ class GameGui:
         Gets all pending pygame events and checks for a quit event.
         """
         events = list(pygame.event.get())
-        self.check_if_quit(events)
-        self.slider.handle_events(events)
         return events
 
     def run_game(self) -> None:
@@ -73,11 +69,19 @@ class GameGui:
 
         self.running = True
 
-        window = pygame.display.set_mode(
-            (self.config.pixel_width, self.config.pixel_height + 50)
+        window_screen = pygame.display.set_mode(
+            (self.config.pixel_width + 50, self.config.pixel_height + 50)
         )
-        screen = pygame.Surface((self.config.pixel_width, self.config.pixel_height))
-        self.renderer.init_pygame_renderer(screen)
+        renderer_screen = pygame.Surface(
+            (self.config.pixel_width, self.config.pixel_height)
+        )
+        self.renderer.init_pygame_renderer(renderer_screen)
+
+        self.slider = Slider(
+            self.config.frame_rate,
+            self.config.pixel_width + 50,
+            self.config.pixel_height,
+        )
 
         pygame.display.set_caption(self.game.name())
         clock = pygame.time.Clock()
@@ -87,6 +91,9 @@ class GameGui:
         while self.running:
             #  Handle user input
             events = self.gather_events()
+            self.check_if_quit(events)
+            self.slider.handle_events(events)
+
             # Pass events to the player (if it's a human/event handler)
             if isinstance(self.player, IEventHandler):
                 self.player.handle_events(events)
@@ -99,11 +106,11 @@ class GameGui:
             self.player.feedback(state, action, reward, new_state, is_terminal)
             state = new_state
 
-            self.renderer.draw(screen)
-            self.slider.draw_slider()
+            self.renderer.draw(renderer_screen)
+            self.slider.draw()
 
-            window.blit(screen, (0, 0))
-            window.blit(self.slider.get_surface(), (0, self.config.pixel_height))
+            window_screen.blit(renderer_screen, (0, 0))
+            window_screen.blit(self.slider.get_surface(), (0, self.config.pixel_height))
             pygame.display.flip()
 
             clock.tick(self.slider.compute_frame_rate())

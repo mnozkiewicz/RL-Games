@@ -11,7 +11,7 @@ class Slider:
         self.area_height = 50
         self.surface = pygame.Surface((width, self.area_height))
 
-    def draw_slider(self) -> None:
+    def draw(self) -> None:
         self.surface.fill(Color.BLACK)
 
         pygame.draw.rect(
