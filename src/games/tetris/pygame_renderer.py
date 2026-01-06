@@ -3,7 +3,6 @@ from .game import TetrisGame
 from ...utils.colors import Color
 from ..base_pygame_renderer import BasePygameRenderer
 
-# from pathlib import Path
 from typing import Dict
 import numpy as np
 from collections import defaultdict
@@ -52,7 +51,7 @@ class TetrisPygameRenderer(BasePygameRenderer[TetrisGame]):
                 width=1,
             )
 
-    def _draw_cur_shape(self, surface: pygame.Surface) -> None:
+    def _draw_shape(self, surface: pygame.Surface) -> None:
         shape = self.game.shape_manager.current_shape()
         mask = shape.mask()
 
@@ -90,13 +89,41 @@ class TetrisPygameRenderer(BasePygameRenderer[TetrisGame]):
                 ),
             )
 
+    def _draw_future_shape(self, surface: pygame.Surface) -> None:
+        left_padding = self.padding + self.game_board_width
+        prev_shape_lower_bound = 0
+
+        for shape in self.game.shape_manager.future_shapes:
+            mask = shape.mask()
+            cur_lower_bound = 0
+
+            for (i, j), value in np.ndenumerate(mask):
+                if value <= 0:
+                    continue
+
+                next_bound = prev_shape_lower_bound + (i + 2) * self.cell_size
+                cur_lower_bound = max(cur_lower_bound, next_bound)
+                pygame.draw.rect(
+                    surface=surface,
+                    color=Color.BLUE,
+                    rect=(
+                        left_padding + (j + 1) * self.cell_size,
+                        next_bound,
+                        self.cell_size,
+                        self.cell_size,
+                    ),
+                )
+
+            prev_shape_lower_bound = cur_lower_bound
+
     def draw(self, surface: pygame.Surface) -> None:
         surface.fill(Color.LIGHTGREEN)
         surface.fill(Color.LIGHTBLUE, self.game_rect)
 
-        self._draw_cur_shape(surface)
+        self._draw_shape(surface)
         self._draw_grid_lines(surface)
         self._draw_static_shapes(surface)
+        self._draw_future_shape(surface)
 
     def get_key_map(self) -> Dict[int, int]:
         return defaultdict(
