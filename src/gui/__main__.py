@@ -39,7 +39,7 @@ def main() -> None:
     parser.add_argument(
         "--pretrained",
         action="store_true",
-        help="Flag telling wheter to use trained agent",
+        help="Flag telling wheter to use the trained agent",
     )
 
     parser.add_argument(
@@ -50,7 +50,7 @@ def main() -> None:
     parser.add_argument(
         "--infinite",
         action="store_true",
-        help="Loop the game every time the agent or player crashes",
+        help="Start over the game every time the agent or player crashes",
     )
 
     parser.add_argument(

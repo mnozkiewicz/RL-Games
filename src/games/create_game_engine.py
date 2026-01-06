@@ -3,6 +3,7 @@ from ..games.base_game import BaseGame
 from .snake.game import SnakeGame
 from .flappy_bird.game import FlappyGame
 from .pacman.game import PacmanGame
+from .tetris.game import TetrisGame
 
 
 def create_game(game_name: str, infinite: bool) -> BaseGame:
@@ -18,5 +19,8 @@ def create_game(game_name: str, infinite: bool) -> BaseGame:
     elif game_name == "pacman":
         pacman_game = PacmanGame(infinite=infinite)
         return pacman_game
+    elif game_name == "tetris":
+        tetris_game = TetrisGame(infinite=infinite)
+        return tetris_game
     else:
         raise ValueError(f"Unknown game: {game_name}")

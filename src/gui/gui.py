@@ -70,7 +70,7 @@ class GameGui:
         self.running = True
 
         window_screen = pygame.display.set_mode(
-            (self.config.pixel_width + 50, self.config.pixel_height + 50)
+            (self.config.pixel_width, self.config.pixel_height + 50)
         )
         renderer_screen = pygame.Surface(
             (self.config.pixel_width, self.config.pixel_height)
