@@ -14,6 +14,10 @@ class Shape(ABC):
         self.rotation: int = rotation
         self.move_counter = 0
 
+    @property
+    @abstractmethod
+    def shape_id(self) -> int: ...
+
     @abstractmethod
     def mask(self) -> np.ndarray: ...
 
@@ -54,6 +58,10 @@ class Shape(ABC):
 class LShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
+
+    @property
+    def shape_id(self) -> int:
+        return 0
 
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:
@@ -99,6 +107,10 @@ class JShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
 
+    @property
+    def shape_id(self) -> int:
+        return 1
+
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:
             case 0:
@@ -143,6 +155,10 @@ class TShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
 
+    @property
+    def shape_id(self) -> int:
+        return 2
+
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:
             case 0:
@@ -173,6 +189,10 @@ class ZShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
 
+    @property
+    def shape_id(self) -> int:
+        return 3
+
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:
             case 0 | 2:
@@ -193,6 +213,10 @@ class SShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
 
+    @property
+    def shape_id(self) -> int:
+        return 4
+
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:
             case 0 | 2:
@@ -212,6 +236,10 @@ class SShape(Shape):
 class IShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
+
+    @property
+    def shape_id(self) -> int:
+        return 5
 
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:
@@ -239,6 +267,10 @@ class IShape(Shape):
 class OShape(Shape):
     def __init__(self, x: int, y: int, rotation: int) -> None:
         super().__init__(x, y, rotation)
+
+    @property
+    def shape_id(self) -> int:
+        return 6
 
     def mask(self) -> npt.NDArray[np.int32]:
         match self.rotation:

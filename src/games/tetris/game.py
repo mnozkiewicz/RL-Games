@@ -14,12 +14,18 @@ class CollisionType(Enum):
 
 
 class TetrisGame(BaseGame):
+    STEP_REWARD = 0.1
+    DEATH_REWARD = -500.0
+    ROW_REMOVED_REWARD = 100.0
+    BLOCK_PUT_REMOVED = 10
+
     def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
 
         self.board: np.ndarray
         self.shape_manager: ShapeGenerator
+        self.move_counter: int
 
         self._running: bool = True
         self.reset()
@@ -28,6 +34,7 @@ class TetrisGame(BaseGame):
         self._score = 0
         self._running = True
         self.board = np.zeros((20, 10), dtype=np.int32)
+        self.move_counter = 0
         self.shape_manager = ShapeGenerator()
 
     def _detect_collision(self, shape: Shape, action_label: int) -> CollisionType:
@@ -59,13 +66,13 @@ class TetrisGame(BaseGame):
         y0, y1 = shape.y, shape.y + mask.shape[1]
         self.board[x0:x1, y0:y1] += mask
 
-    def end_game(self) -> None:
+    def _end_game(self) -> None:
         if not self.infinite:
             self._running = False
         else:
             self.reset()
 
-    def remove_rows(self) -> int:
+    def _remove_rows(self) -> int:
         last_row, column_count = self.board.shape
         count = 0
 
@@ -91,30 +98,60 @@ class TetrisGame(BaseGame):
         if collision != CollisionType.NO_COLLISION:
             shape.rollback(action=action_label)
 
+        block_put_reward = 0
         if (
             collision == CollisionType.LOWER_WALL
             or collision == CollisionType.OTHER_SHAPE_FROM_UP
         ):
             if shape.move_counter <= 1:
-                self.end_game()
-                return -1
+                self._end_game()
+                return TetrisGame.DEATH_REWARD
 
             self._add_shape(shape)
             self.shape_manager.next_shape()
+            block_put_reward = 1
 
-        rows_removed = self.remove_rows()
+        rows_removed = self._remove_rows()
         self._score += rows_removed
 
-        if shape.move_counter % 4 == 0:
+        self.move_counter += 1
+        if self.move_counter % 4 == 0:
             self.step(-1)
 
-        return rows_removed
+        return (
+            rows_removed * TetrisGame.ROW_REMOVED_REWARD
+            + TetrisGame.STEP_REWARD
+            + block_put_reward * TetrisGame.BLOCK_PUT_REMOVED
+        )
 
     def is_running(self) -> bool:
         return self._running
 
     def processed_state(self) -> np.ndarray:
-        return np.array([[0]], dtype=np.float32)
+        current_board = np.zeros_like(self.board)
+        current_board[self.board > 0] = 1
+        current_board_vector = current_board.flatten()
+
+        cur_shape = self.shape_manager.current_shape()
+        cur_shape_mask = cur_shape.mask().flatten()
+        cur_shape_mask = np.pad(
+            cur_shape_mask, (0, 6 - cur_shape_mask.shape[0]), constant_values=0
+        )
+
+        position = [cur_shape.x, cur_shape.y]
+
+        rotation = [0, 0, 0, 0]
+        rotation[cur_shape.rotation] = 1
+
+        shape_id = [0] * 7
+        shape_id[cur_shape.shape_id] = 1
+
+        whole_state = np.concatenate(
+            (current_board_vector, cur_shape_mask, position, rotation, shape_id),
+            dtype=np.float32,
+        )
+
+        return whole_state
 
     def name(self) -> str:
         return "Tetris"

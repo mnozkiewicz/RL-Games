@@ -112,7 +112,7 @@ def main() -> None:
         "--game",
         type=str,
         default="snake",
-        choices=["flappy", "snake", "pacman"],
+        choices=["flappy", "snake", "pacman", "tetris"],
         help="Which game to run.",
     )
     parser.add_argument(

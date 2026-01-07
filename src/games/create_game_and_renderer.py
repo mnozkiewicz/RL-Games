@@ -10,6 +10,8 @@ from .pacman.game import PacmanGame
 from .pacman.pygame_renderer import PacmanPygameRenderer
 from .tetris.game import TetrisGame
 from .tetris.pygame_renderer import TetrisPygameRenderer
+from .racecar.game import RacecarGame
+from .racecar.pygame_renderer import RacecarPygameRenderer
 
 
 def create_game_and_renderer(
@@ -36,5 +38,9 @@ def create_game_and_renderer(
         tetris_game = TetrisGame(infinite=infinite, is_ai_controlled=is_ai_controlled)
         tetris_renderer = TetrisPygameRenderer(tetris_game)
         return tetris_game, tetris_renderer
+    elif game_name == "racecar":
+        racecar_game = RacecarGame(infinite=infinite, is_ai_controlled=is_ai_controlled)
+        racecar_renderer = RacecarPygameRenderer(racecar_game)
+        return racecar_game, racecar_renderer
     else:
         raise ValueError(f"Unknown game: {game_name}")
