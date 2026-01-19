@@ -13,7 +13,9 @@ from ..players import HumanPlayer, AIPlayer
 from ..agents.actor_critic import ActorCriticAgent
 
 # Game object factory
-from ..games.create_game_and_renderer import create_game_and_renderer
+from ..games.registry import create_game_and_renderer, GAME_REGISTRY
+
+GAMES = list(GAME_REGISTRY.keys())
 
 
 def main() -> None:
@@ -25,7 +27,7 @@ def main() -> None:
         "--game",
         type=str,
         default="snake",
-        choices=["flappy", "snake", "pacman", "tetris", "racecar"],
+        choices=GAMES,
         help="Which game to run.",
     )
     parser.add_argument(

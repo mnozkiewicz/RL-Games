@@ -11,7 +11,7 @@ class BaseGame(ABC):
     this class and implement its abstract methods.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, infinite: bool = False, is_ai_controlled: bool = False) -> None:
         super().__init__()
 
     @abstractmethod

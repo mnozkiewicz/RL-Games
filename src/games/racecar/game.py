@@ -15,7 +15,7 @@ class RacecarGame(BaseGame):
     def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
-        self.track = CarTrack()
+        self.track: CarTrack
 
         self._running: bool
         self._score: int
@@ -25,6 +25,7 @@ class RacecarGame(BaseGame):
     def reset(self) -> None:
         self._running = True
         self._score = 0
+        self.track = CarTrack()
         self.car = Car(*self.track.init_car_params())
 
     def _check_collision(self) -> bool:

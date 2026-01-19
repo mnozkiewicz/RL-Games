@@ -19,7 +19,7 @@ class SnakeGame(BaseGame):
 
     def __init__(
         self,
-        board_size: int,
+        board_size: int = 15,
         infinite: bool = True,
         is_ai_controlled: bool = False,
         wall_collision_on: bool = False,

@@ -12,7 +12,7 @@ class Car:
     def __init__(self, initial_x: float, initial_y: float, initial_angle: int) -> None:
         self.x = initial_x
         self.y = initial_y
-        self.speed = 0.0
+        self.speed = 0.002
 
         self.angle = initial_angle
 
@@ -41,7 +41,7 @@ class Car:
                 self.vector_update()
             case 3:
                 self.speed -= Car.ACCELARATION
-                self.speed = max(self.speed, 0)
+                self.speed = max(self.speed, 0.002)
             case _:
                 raise ValueError(
                     f"Unknow command value passed to turn method: {command}"

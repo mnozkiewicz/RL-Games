@@ -2,13 +2,15 @@ from torch import optim
 from ..agents.actor_critic import ActorCriticAgent
 from ..agents.base_agent import BaseAgent
 from ..games.base_game import BaseGame
-from ..games.create_game_engine import create_game
+from ..games.registry import create_game_engine, GAME_REGISTRY
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
 from pathlib import Path
 import argparse
 from tqdm import tqdm
+
+GAMES = list(GAME_REGISTRY.keys())
 
 
 def get_current_dir_path() -> Path:
@@ -112,7 +114,7 @@ def main() -> None:
         "--game",
         type=str,
         default="snake",
-        choices=["flappy", "snake", "pacman", "tetris", "racecar"],
+        choices=GAMES,
         help="Which game to run.",
     )
     parser.add_argument(
@@ -144,7 +146,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Intitialize game engine
-    game = create_game(args.game, infinite=False)
+    game = create_game_engine(args.game, infinite=False)
 
     # Create game agent
     actor_critic_agent = ActorCriticAgent(
