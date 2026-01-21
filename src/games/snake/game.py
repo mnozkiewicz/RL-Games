@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from collections import deque
 from typing import Literal
 from .utils import Pos, State, Action
 from .snake import Snake
@@ -22,6 +23,7 @@ class SnakeGame(BaseGame):
     def __init__(
         self,
         state_type: Literal["processed_state", "raw_pixels"],
+        last_frames_count: int = 4,
         board_size: int = 15,
         infinite: bool = True,
         is_ai_controlled: bool = False,
@@ -33,6 +35,7 @@ class SnakeGame(BaseGame):
         self.infinite: bool = infinite
         self.is_ai_controlled = is_ai_controlled
         self.wall_collision_on = wall_collision_on
+        self.last_frames_count = last_frames_count
 
         self.snake: Snake
         self._current_state_index: int
@@ -42,6 +45,7 @@ class SnakeGame(BaseGame):
         self._food: Pos
         self._state: State
         self._score: int
+        self.last_frames: deque[np.ndarray]
 
         self.reset()
 
@@ -56,9 +60,15 @@ class SnakeGame(BaseGame):
         self._last_computed_state = 0
         self._running = True
         self._score = 0
-
         self.draw_new_food()
         self._state = self._compute_state()
+
+        self.last_frames = deque(
+            [
+                np.zeros((3, 64, 64), dtype=np.float32)
+                for _ in range(self.last_frames_count)
+            ]
+        )
 
     @property
     def number_of_moves(self) -> int:
@@ -227,4 +237,11 @@ class SnakeGame(BaseGame):
 
         state[1][*self.snake.head()] = 1.0
         state[2][*self._food] = 1.0
-        return self._resize_state_nearest(state, 64, 64)
+
+        state = self._resize_state_nearest(state, 64, 64)
+
+        self.last_frames.pop()
+        self.last_frames.appendleft(state)
+
+        frames_concatenated = np.vstack(self.last_frames)
+        return frames_concatenated

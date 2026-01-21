@@ -3,6 +3,7 @@ from .shape_generator import ShapeGenerator
 from .shapes import Shape
 from enum import Enum
 import numpy as np
+from typing import Literal
 
 
 class CollisionType(Enum):
@@ -19,7 +20,13 @@ class TetrisGame(BaseGame):
     ROW_REMOVED_REWARD = 100.0
     BLOCK_PUT_REMOVED = 10
 
-    def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
+    def __init__(
+        self,
+        state_type: Literal["processed_state", "raw_pixels"],
+        infinite: bool = True,
+        is_ai_controlled: bool = False,
+    ) -> None:
+        super().__init__(state_type=state_type)
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
 

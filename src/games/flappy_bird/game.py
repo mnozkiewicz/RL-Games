@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List
+from typing import List, Literal
 from random import randrange
 
 from ..base_game import BaseGame
@@ -19,7 +19,14 @@ class FlappyGame(BaseGame):
     MOVE_REWARD = 0.1
     DEATH_REWARD = -1.0
 
-    def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
+    def __init__(
+        self,
+        state_type: Literal["processed_state", "raw_pixels"],
+        infinite: bool = True,
+        is_ai_controlled: bool = False,
+    ) -> None:
+        super().__init__(state_type=state_type)
+
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
 

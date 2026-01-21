@@ -4,7 +4,7 @@ from .utils import Action, Dir, Pos
 from .pacman import Pacman
 from .board import Board, BoardView
 from .ghost import Ghost
-from typing import Dict
+from typing import Dict, Literal
 from .map_prep.board import board_init
 
 
@@ -23,7 +23,14 @@ class PacmanGame(BaseGame):
     DEATH_REWARD = -1000
     WIN_REWARD = 1000
 
-    def __init__(self, infinite: bool = False, is_ai_controlled: bool = False) -> None:
+    def __init__(
+        self,
+        state_type: Literal["processed_state", "raw_pixels"],
+        infinite: bool = False,
+        is_ai_controlled: bool = False,
+    ) -> None:
+        super().__init__(state_type=state_type)
+
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
 

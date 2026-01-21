@@ -129,7 +129,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
                 dummy = torch.zeros(1, input_channels, input_height, input_width)
                 return int(cnn(dummy).shape[1])
 
-        actor_cnn = nn.Sequential(
+        backbone_cnn = nn.Sequential(
             nn.Conv2d(input_channels, 32, kernel_size=8, stride=4),
             nn.LayerNorm([32, (input_height - 8) // 4 + 1, (input_width - 8) // 4 + 1]),
             nn.ReLU(),
@@ -148,39 +148,19 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         )
 
         actor_fc = nn.Sequential(
-            nn.Linear(cnn_out_dim(actor_cnn), 512),
+            nn.Linear(cnn_out_dim(backbone_cnn), 512),
             nn.ReLU(),
             nn.Linear(512, output_size),
             nn.Softmax(dim=-1),
         )
-
-        actor = nn.Sequential(actor_cnn, actor_fc)
-
-        critic_cnn = nn.Sequential(
-            nn.Conv2d(input_channels, 32, kernel_size=8, stride=4),
-            nn.LayerNorm([32, (input_height - 8) // 4 + 1, (input_width - 8) // 4 + 1]),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2),
-            nn.LayerNorm(
-                [
-                    64,
-                    ((input_height - 8) // 4 - 4) // 2 + 1,
-                    ((input_width - 8) // 4 - 4) // 2 + 1,
-                ]
-            ),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.Flatten(),
-        )
+        actor = nn.Sequential(backbone_cnn, actor_fc)
 
         critic_fc = nn.Sequential(
-            nn.Linear(cnn_out_dim(critic_cnn), 512),
+            nn.Linear(cnn_out_dim(backbone_cnn), 512),
             nn.ReLU(),
             nn.Linear(512, 1),
         )
-
-        critic = nn.Sequential(critic_cnn, critic_fc)
+        critic = nn.Sequential(backbone_cnn, critic_fc)
 
         return nn.ModuleDict(
             {
@@ -283,9 +263,15 @@ class ActorCriticAgent(BaseAgent, nn.Module):
                 -1, 1
             )  # Policy gradient
 
+            entropy = distribution.entropy().mean()  # type: ignore[no-untyped-call]
+            # How much do we force exploration
+            entropy_coefficient = 0.01
+
             # Backpropagate combined loss (averaged out over batch)
-            total_loss = (critics_loss + actors_loss).mean()
-            total_loss.backward()  # type: ignore[no-untyped-call]
+            total_loss = (
+                critics_loss + actors_loss - entropy_coefficient * entropy
+            ).mean()
+            total_loss.backward()
             self.optimizer.step()
 
             # Clear buffer after update

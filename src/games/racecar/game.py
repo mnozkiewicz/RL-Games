@@ -2,6 +2,7 @@ from ..base_game import BaseGame
 from .car import Car
 from .track import CarTrack, Event
 import numpy as np
+from typing import Literal
 
 
 class RacecarGame(BaseGame):
@@ -12,7 +13,13 @@ class RacecarGame(BaseGame):
     DEATH_REWARD: float = -200.0
     WIN_REWARD: float = 100.0
 
-    def __init__(self, infinite: bool = True, is_ai_controlled: bool = False) -> None:
+    def __init__(
+        self,
+        state_type: Literal["processed_state", "raw_pixels"],
+        infinite: bool = True,
+        is_ai_controlled: bool = False,
+    ) -> None:
+        super().__init__(state_type=state_type)
         self.infinite = infinite
         self.is_ai_controlled = is_ai_controlled
         self.track: CarTrack

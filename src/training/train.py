@@ -102,6 +102,10 @@ def train(
                     past_rewards, past_scores, window_size, current_dir, i_episode + 1
                 )
 
+        if (i_episode + 1) % 500 == 0:
+            path = current_dir / f"weights/learning_{i_episode}"
+            agent.save_model(str(path))
+
     agent.save_model(str(Path("weights") / f"{game.name()}_controller"))
 
     return agent
@@ -165,6 +169,7 @@ def main() -> None:
         device=args.device,
         optimizer=optim.AdamW,
         optimizer_kwargs={"lr": args.lr},
+        input_type=args.input_type,
     )
 
     # Run training
