@@ -70,7 +70,7 @@ def train(
 
     for i_episode in tqdm(range(num_episodes)):
         game.reset()
-        state = game.processed_state()
+        state = game.state()
 
         reward_sum = 0.0
         maximum_score = 0
@@ -80,7 +80,7 @@ def train(
             action = agent.choose_action(state)
 
             reward = game.step(action)
-            new_state = game.processed_state()
+            new_state = game.state()
             terminal = not game.is_running()
             agent.learn(state, action, reward, new_state, terminal)
 
@@ -118,6 +118,13 @@ def main() -> None:
         help="Which game to run.",
     )
     parser.add_argument(
+        "--input_type",
+        type=str,
+        default="processed_state",
+        choices=["processed_state", "raw_pixels"],
+        help="Should agent make choices based on a game image or a processed_state.",
+    )
+    parser.add_argument(
         "--episodes", type=int, default=1000, help="Number of training episodes."
     )
     parser.add_argument(
@@ -146,11 +153,11 @@ def main() -> None:
     args = parser.parse_args()
 
     # Intitialize game engine
-    game = create_game_engine(args.game, infinite=False)
+    game = create_game_engine(args.game, args.input_type, infinite=False)
 
     # Create game agent
     actor_critic_agent = ActorCriticAgent(
-        state_space_shape=game.processed_state().shape[0],
+        state_space_shape=game.state().shape,
         action_space_size=game.number_of_moves,
         batch_size=args.batch_size,
         hidden_layer_sizes=(256, 64),

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import TypeVar
+from typing import TypeVar, Literal
 
 
 class BaseGame(ABC):
@@ -11,8 +11,14 @@ class BaseGame(ABC):
     this class and implement its abstract methods.
     """
 
-    def __init__(self, infinite: bool = False, is_ai_controlled: bool = False) -> None:
+    def __init__(
+        self,
+        state_type: Literal["processed_state", "raw_pixels"],
+        infinite: bool = False,
+        is_ai_controlled: bool = False,
+    ) -> None:
         super().__init__()
+        self._use_processed_state = state_type == "processed_state"
 
     @abstractmethod
     def reset(self) -> None:
@@ -48,10 +54,25 @@ class BaseGame(ABC):
         """
         ...
 
+    def state(self) -> np.ndarray:
+        """
+        Gets the current state of the game, processed or raw pixels
+        """
+        if self._use_processed_state:
+            return self._processed_state()
+        return self._raw_state()
+
     @abstractmethod
-    def processed_state(self) -> np.ndarray:
+    def _processed_state(self) -> np.ndarray:
         """
         Gets the current state of the game, processed for the neural network.
+        """
+        ...
+
+    @abstractmethod
+    def _raw_state(self) -> np.ndarray:
+        """
+        Gets the current state of the game, but in raw pixels
         """
         ...
 

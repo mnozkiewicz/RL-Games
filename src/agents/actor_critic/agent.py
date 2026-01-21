@@ -34,7 +34,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         if input_type == "processed_state":
             if isinstance(state_space_shape, tuple):
                 assert len(state_space_shape) == 1, (
-                    "For Actor Critic Agent with `input_type` == `processed_state`"
+                    "For Actor Critic Agent with `input_type` == `processed_state`\n"
                     "state_space_shape can be either an integer or one-element tuple"
                 )
             else:
@@ -45,17 +45,19 @@ class ActorCriticAgent(BaseAgent, nn.Module):
             ).to(device)
 
         else:
-            raise NotImplementedError("Yet to implement the raw pixels version")
-            # assert isinstance(state_space_shape, tuple) and len(state_space_shape) == 3, (
-            #     "For Actor Critic Agent with `input_type` == `processed_state`"
-            #     "state_space_shape can be either an integer or one-element tuple"
-            # )
-            # self.model = self._create_networks(
-            #     state_space_shape[0], hidden_layer_sizes, action_space_size
-            # ).to(device)
+            assert (
+                isinstance(state_space_shape, tuple) and len(state_space_shape) == 3
+            ), (
+                "For Actor Critic Agent with `input_type` == `raw_pixels`\n"
+                "state_space_shape should be three element tuple: (channels, height, width)"
+            )
+            self.model = self._create_cnn_networks(
+                state_space_shape, action_space_size
+            ).to(device)
 
         self.state_space_shape = state_space_shape
         self.action_space_size = action_space_size
+        self.input_type = input_type
         self.eval_mode = False
 
         # Agent hyperparameters
@@ -116,6 +118,76 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         critic = nn.Sequential(*critic_layers)
 
         return nn.ModuleDict({"actor": actor, "critic": critic})
+
+    def _create_cnn_networks(
+        self, input_shape: Tuple[int, int, int], output_size: int
+    ) -> nn.ModuleDict:
+        input_channels, input_height, input_width = input_shape
+
+        def cnn_out_dim(cnn: nn.Module) -> int:
+            with torch.no_grad():
+                dummy = torch.zeros(1, input_channels, input_height, input_width)
+                return int(cnn(dummy).shape[1])
+
+        actor_cnn = nn.Sequential(
+            nn.Conv2d(input_channels, 32, kernel_size=8, stride=4),
+            nn.LayerNorm([32, (input_height - 8) // 4 + 1, (input_width - 8) // 4 + 1]),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2),
+            nn.LayerNorm(
+                [
+                    64,
+                    ((input_height - 8) // 4 - 4) // 2 + 1,
+                    ((input_width - 8) // 4 - 4) // 2 + 1,
+                ]
+            ),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        actor_fc = nn.Sequential(
+            nn.Linear(cnn_out_dim(actor_cnn), 512),
+            nn.ReLU(),
+            nn.Linear(512, output_size),
+            nn.Softmax(dim=-1),
+        )
+
+        actor = nn.Sequential(actor_cnn, actor_fc)
+
+        critic_cnn = nn.Sequential(
+            nn.Conv2d(input_channels, 32, kernel_size=8, stride=4),
+            nn.LayerNorm([32, (input_height - 8) // 4 + 1, (input_width - 8) // 4 + 1]),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2),
+            nn.LayerNorm(
+                [
+                    64,
+                    ((input_height - 8) // 4 - 4) // 2 + 1,
+                    ((input_width - 8) // 4 - 4) // 2 + 1,
+                ]
+            ),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        critic_fc = nn.Sequential(
+            nn.Linear(cnn_out_dim(critic_cnn), 512),
+            nn.ReLU(),
+            nn.Linear(512, 1),
+        )
+
+        critic = nn.Sequential(critic_cnn, critic_fc)
+
+        return nn.ModuleDict(
+            {
+                "actor": actor,
+                "critic": critic,
+            }
+        )
 
     def choose_action(self, state: np.ndarray) -> int:
         """
@@ -234,7 +306,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         - config.json : network architecture and state/action dimensions
         - model.pth   : PyTorch model weights
         """
-
+        path = f"{path}_{self.input_type}"
         print(f"Saving model to {path}...")
         os.makedirs(path, exist_ok=True)
 
@@ -242,6 +314,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
             "state_space_shape": self.state_space_shape,
             "action_space_size": self.action_space_size,
             "hidden_layer_sizes": list(self.hidden_layer_sizes),
+            "input_type": self.input_type,
         }
 
         with open(os.path.join(path, "config.json"), "w") as f:
@@ -255,6 +328,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         Load a model from disk.
         Recreates the architecture using config.json and loads the trained weights.
         """
+
         print(f"Loading model from {path}...")
 
         with open(os.path.join(path, "config.json"), "r") as f:

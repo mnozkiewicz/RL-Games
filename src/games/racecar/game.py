@@ -67,7 +67,7 @@ class RacecarGame(BaseGame):
     def is_running(self) -> bool:
         return self._running
 
-    def processed_state(self) -> np.ndarray:
+    def _processed_state(self) -> np.ndarray:
         pos = np.array([self.car.x, self.car.y, self.car.speed])
         direction = np.array(self.car.vector)
         ray_cast = self.track.ray_cast(*self.car.pos(), num_rays=32)
@@ -81,6 +81,11 @@ class RacecarGame(BaseGame):
         )
 
         return state
+
+    def _raw_state(self) -> np.ndarray:
+        raise NotImplementedError(
+            "Raw pixel state vesrsion not available for racecar for now"
+        )
 
     def name(self) -> str:
         return "RACECAR"

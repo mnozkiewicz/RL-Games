@@ -76,7 +76,7 @@ class FlappyGame(BaseGame):
     def is_running(self) -> bool:
         return self._running
 
-    def processed_state(self) -> np.ndarray:
+    def _processed_state(self) -> np.ndarray:
         features: List[float] = []
         for obstacle in self.obstacles:
             if obstacle.x + obstacle.width > self.bird.x:
@@ -95,6 +95,11 @@ class FlappyGame(BaseGame):
         features.append(self.bird.size)
 
         return np.array(features, dtype=np.float32)
+
+    def _raw_state(self) -> np.ndarray:
+        raise NotImplementedError(
+            "Raw pixel state vesrsion not available for tetris for now"
+        )
 
     def name(self) -> str:
         return "Flappy Bird"

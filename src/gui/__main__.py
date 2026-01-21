@@ -31,6 +31,13 @@ def main() -> None:
         help="Which game to run.",
     )
     parser.add_argument(
+        "--input_type",
+        type=str,
+        default="processed_state",
+        choices=["processed_state", "raw_pixels"],
+        help="Should agent make choices based on a game image or a processed_state.",
+    )
+    parser.add_argument(
         "--player",
         type=str,
         default="ai",
@@ -66,7 +73,7 @@ def main() -> None:
 
     # Game and GUI setup
     game, renderer = create_game_and_renderer(
-        args.game, args.infinite, (args.player == "ai")
+        args.game, args.input_type, args.infinite, (args.player == "ai")
     )
     key_map = renderer.get_key_map()
     config = GUIConfig(
@@ -83,16 +90,17 @@ def main() -> None:
         player = HumanPlayer(game=game, key_map=key_map)
     else:
         if args.pretrained:
-            model_path = f"weights/{game.name()}_controller"
+            model_path = f"weights/{game.name()}_controller_{args.input_type}"
             if not Path(model_path).exists():
                 raise ValueError(f"There is no model in path {model_path}")
             print(f"Loading AI model from {model_path}...")
             agent = ActorCriticAgent.load_model(model_path)
         else:
             agent = ActorCriticAgent(
-                game.processed_state().shape,
+                game.state().shape,
                 game.number_of_moves,
                 hidden_layer_sizes=(64, 64),
+                input_type=args.input_type,
             )
 
         player = AIPlayer(game=game, agent=agent, learn=args.learn)

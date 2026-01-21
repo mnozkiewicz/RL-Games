@@ -127,7 +127,7 @@ class TetrisGame(BaseGame):
     def is_running(self) -> bool:
         return self._running
 
-    def processed_state(self) -> np.ndarray:
+    def _processed_state(self) -> np.ndarray:
         current_board = np.zeros_like(self.board)
         current_board[self.board > 0] = 1
         current_board_vector = current_board.flatten()
@@ -152,6 +152,11 @@ class TetrisGame(BaseGame):
         )
 
         return whole_state
+
+    def _raw_state(self) -> np.ndarray:
+        raise NotImplementedError(
+            "Raw pixel state vesrsion not available for tetris for now"
+        )
 
     def name(self) -> str:
         return "Tetris"

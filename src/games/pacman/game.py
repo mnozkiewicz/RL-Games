@@ -114,7 +114,7 @@ class PacmanGame(BaseGame):
     def name(self) -> str:
         return "PACMAN"
 
-    def processed_state(self) -> np.ndarray:
+    def _processed_state(self) -> np.ndarray:
         x, y = self.pacman.get_pos()
         dir = self.pacman.get_dir()
 
@@ -150,3 +150,8 @@ class PacmanGame(BaseGame):
             ),
             dtype=np.float32,
         ).flatten()
+
+    def _raw_state(self) -> np.ndarray:
+        raise NotImplementedError(
+            "Raw pixel state vesrsion not available for pacman for now"
+        )

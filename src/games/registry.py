@@ -1,4 +1,4 @@
-from typing import Dict, Type, Tuple
+from typing import Dict, Type, Tuple, Literal
 from ..games.base_game import BaseGame
 from .base_pygame_renderer import BasePygameRenderer
 
@@ -19,7 +19,10 @@ def register_game(
 
 
 def create_game_and_renderer(
-    game_name: str, infinite: bool, is_ai_controlled: bool
+    game_name: str,
+    state_type: Literal["processed_state", "raw_pixels"],
+    infinite: bool,
+    is_ai_controlled: bool,
 ) -> Tuple[BaseGame, BasePygameRenderer[BaseGame]]:
     """
     Factory function to initialize the correct game and renderer.
@@ -28,13 +31,15 @@ def create_game_and_renderer(
         raise ValueError(f"Unknown game: {game_name}")
 
     game = GAME_REGISTRY[game_name](
-        infinite=infinite, is_ai_controlled=is_ai_controlled
+        state_type=state_type, infinite=infinite, is_ai_controlled=is_ai_controlled
     )
     renderer = RENDERER_REGISTRY[game_name](game)
     return game, renderer
 
 
-def create_game_engine(game_name: str, infinite: bool) -> BaseGame:
+def create_game_engine(
+    game_name: str, state_type: Literal["processed_state", "raw_pixels"], infinite: bool
+) -> BaseGame:
     """
     Factory function to initialize the correct game engine.
     """
@@ -42,6 +47,7 @@ def create_game_engine(game_name: str, infinite: bool) -> BaseGame:
         raise ValueError(f"Unknown game: {game_name}")
 
     game = GAME_REGISTRY[game_name](
+        state_type=state_type,
         infinite=infinite,
     )
     return game

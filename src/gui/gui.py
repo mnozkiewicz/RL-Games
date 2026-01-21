@@ -86,7 +86,7 @@ class GameGui:
         pygame.display.set_caption(self.game.name())
         clock = pygame.time.Clock()
 
-        state = self.game.processed_state()
+        state = self.game.state()
 
         while self.running:
             #  Handle user input
@@ -100,7 +100,7 @@ class GameGui:
 
             action = self.player.move(state)
             reward = self.game.step(action)
-            new_state = self.game.processed_state()
+            new_state = self.game.state()
             is_terminal = not self.game.is_running()
 
             self.player.feedback(state, action, reward, new_state, is_terminal)

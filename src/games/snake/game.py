@@ -1,4 +1,6 @@
 import numpy as np
+import cv2
+from typing import Literal
 from .utils import Pos, State, Action
 from .snake import Snake
 from ..base_game import BaseGame
@@ -19,11 +21,14 @@ class SnakeGame(BaseGame):
 
     def __init__(
         self,
+        state_type: Literal["processed_state", "raw_pixels"],
         board_size: int = 15,
         infinite: bool = True,
         is_ai_controlled: bool = False,
         wall_collision_on: bool = False,
     ) -> None:
+        super().__init__(state_type=state_type)
+
         self.board_size: int = board_size
         self.infinite: bool = infinite
         self.is_ai_controlled = is_ai_controlled
@@ -130,7 +135,7 @@ class SnakeGame(BaseGame):
 
         self._food = Pos(row.item(), col.item())
 
-    def processed_state(self) -> np.ndarray:
+    def _processed_state(self) -> np.ndarray:
         def get_local_window(state: State, window_size: int = 7) -> np.ndarray:
             head_x, head_y = state.head
             food_x, food_y = state.food
@@ -202,12 +207,24 @@ class SnakeGame(BaseGame):
 
         return np.concatenate((relational, local_view))
 
-    def entire_state(self) -> np.ndarray:
-        state = np.zeros((1, *self.snake.board().shape), dtype=np.float32)
+    def _resize_state_nearest(
+        self, state: np.ndarray, new_h: int, new_w: int
+    ) -> np.ndarray:
+        resized = np.empty((state.shape[0], new_h, new_w), dtype=state.dtype)
+
+        for c in range(state.shape[0]):
+            resized[c] = cv2.resize(
+                state[c], (new_w, new_h), interpolation=cv2.INTER_NEAREST
+            )
+
+        return resized
+
+    def _raw_state(self) -> np.ndarray:
+        state = np.zeros((3, *self.snake.board().shape), dtype=np.float32)
 
         for pos in self.snake.tail():
             state[0][*pos] = 1.0
 
-        state[0][*self.snake.head()] = 1.0
-        state[0][*self._food] = -1.0
-        return state
+        state[1][*self.snake.head()] = 1.0
+        state[2][*self._food] = 1.0
+        return self._resize_state_nearest(state, 64, 64)
