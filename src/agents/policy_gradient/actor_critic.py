@@ -24,6 +24,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         batch_size: int = 64,
         epsilon: float = 0.00,  # Exploration factor for epsilon-greedy
         discount_factor: float = 0.99,
+        entropy_coef: float = 0.01,
         device: str = "cpu",
         optimizer: Optional[Type[optim.Optimizer]] = None,
         optimizer_kwargs: Optional[dict[str, Any]] = None,
@@ -65,6 +66,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         self.discount_factor = discount_factor
         self.device = device
         self.epsilon = epsilon
+        self.entropy_coef = entropy_coef
 
         # Buffer to store trajectories before batch updates
         assert batch_size >= 2, "Size of batch should be at least 2"
@@ -217,65 +219,59 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         Store a transition in the trajectory buffer.
         Once the buffer is full, update actor and critic networks.
         """
-
         # Store transition
         self.trajectory_buffer.store(state, action, reward, next_state, terminal)
 
         if self.trajectory_buffer.is_full():
-            # Retrieve batch from buffer
-            states, actions, rewards, next_states, dones = (
-                self.trajectory_buffer.get_batch()
-            )
-
-            # Convert to tensors
-            states_tensor = torch.tensor(states).to(self.device)
-            next_states_tensor = torch.tensor(next_states).to(self.device)
-            rewards_tensor = torch.tensor(rewards.reshape(rewards.shape[0], 1)).to(
-                self.device
-            )
-            actions_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
-
-            # Reset gradients
-            self.optimizer.zero_grad()
-
-            # Critic state value estimation before taking an action
-            critics_evaluation: torch.Tensor = self.model["critic"](states_tensor)
-
-            # Critic state value estimation after taking an action and receiving reward
-            # Uses bootstraping
-            remaining_reward = self.discount_factor * self.evaluate_state(
-                next_states_tensor
-            )
-            remaining_reward[dones] = 0.0  # Zero out terminal states
-
-            # Compute log probabilities
-            probs = self.model["actor"](states_tensor)
-            distribution = Categorical(probs=probs)
-            log_probs: Any = distribution.log_prob(actions_tensor)  # type: ignore
-
-            if not isinstance(log_probs, torch.Tensor):
-                raise RuntimeError("Error while computing the distribution")
-
-            # Computing difference between critics_evaluation and bootstrapped evaluation
-            advantage = rewards_tensor + remaining_reward - critics_evaluation
-            critics_loss = advantage.square()  # MSE for critic
-            actors_loss = -advantage.detach() * log_probs.reshape(
-                -1, 1
-            )  # Policy gradient
-
-            entropy = distribution.entropy().mean()  # type: ignore[no-untyped-call]
-            # How much do we force exploration
-            entropy_coefficient = 0.01
-
-            # Backpropagate combined loss (averaged out over batch)
-            total_loss = (
-                critics_loss + actors_loss - entropy_coefficient * entropy
-            ).mean()
-            total_loss.backward()
-            self.optimizer.step()
-
+            self._update()
             # Clear buffer after update
             self.trajectory_buffer.clear()
+
+    def _update(self) -> None:
+        # Retrieve batch from buffer
+        states, actions, rewards, next_states, dones, _ = (
+            self.trajectory_buffer.get_batch()
+        )
+
+        # Convert to tensors
+        states_tensor = torch.tensor(states).to(self.device)
+        next_states_tensor = torch.tensor(next_states).to(self.device)
+        rewards_tensor = torch.tensor(rewards.reshape(rewards.shape[0], 1)).to(
+            self.device
+        )
+        actions_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
+
+        # Critic state value estimation before taking an action
+        critics_evaluation: torch.Tensor = self.model["critic"](states_tensor)
+
+        # Critic state value estimation after taking an action and receiving reward
+        # Uses bootstraping
+        remaining_reward = self.discount_factor * self.evaluate_state(
+            next_states_tensor
+        )
+        remaining_reward[dones] = 0.0  # Zero out terminal states
+
+        # Compute log probabilities
+        probs = self.model["actor"](states_tensor)
+        distribution = Categorical(probs=probs)
+        log_probs: Any = distribution.log_prob(actions_tensor)  # type: ignore
+
+        if not isinstance(log_probs, torch.Tensor):
+            raise RuntimeError("Error while computing the distribution")
+
+        # Computing difference between critics_evaluation and bootstrapped evaluation
+        advantage = rewards_tensor + remaining_reward - critics_evaluation
+        critics_loss = advantage.square()  # MSE for critic
+        actors_loss = -advantage.detach() * log_probs.reshape(-1, 1)  # Policy gradient
+        entropy = distribution.entropy().mean()  # type: ignore[no-untyped-call]
+
+        # Backpropagate combined loss (averaged out over batch)
+        total_loss = (critics_loss + actors_loss - self.entropy_coef * entropy).mean()
+
+        # Optimizer step
+        self.optimizer.zero_grad()
+        total_loss.backward()
+        self.optimizer.step()
 
     def set_eval_mode(self) -> None:
         self.eval()

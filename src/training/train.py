@@ -1,5 +1,5 @@
 from torch import optim
-from ..agents.actor_critic import ActorCriticAgent
+from ..agents.policy_gradient import ActorCriticAgent
 from ..agents.base_agent import BaseAgent
 from ..games.base_game import BaseGame
 from ..games.registry import create_game_engine, GAME_REGISTRY

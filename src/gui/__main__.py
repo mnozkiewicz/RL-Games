@@ -10,7 +10,7 @@ from .gui_config import GUIConfig
 
 # Players and agents
 from ..players import HumanPlayer, AIPlayer
-from ..agents.actor_critic import ActorCriticAgent
+from ..agents.policy_gradient import ActorCriticAgent
 
 # Game object factory
 from ..games.registry import create_game_and_renderer, GAME_REGISTRY

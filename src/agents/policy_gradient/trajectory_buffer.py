@@ -1,4 +1,4 @@
-from typing import NamedTuple, List, Tuple, Any, Callable
+from typing import NamedTuple, List, Any, Callable
 import numpy as np
 from operator import attrgetter
 
@@ -19,6 +19,16 @@ class Transition(NamedTuple):
     reward: float
     next_state: np.ndarray
     done: bool
+    log_prob: float
+
+
+class Batch(NamedTuple):
+    states: np.ndarray
+    actions: np.ndarray
+    rewards: np.ndarray
+    next_states: np.ndarray
+    dones: np.ndarray
+    log_probs: np.ndarray
 
 
 class TrajectoryBuffer:
@@ -38,12 +48,15 @@ class TrajectoryBuffer:
         reward: float,
         next_state: np.ndarray,
         done: bool,
+        log_prob: float = 0.0,
     ) -> None:
         """
         Add a new transition to the buffer.
         If the buffer exceeds max_len, discard the oldest transition.
         """
-        self.buffer.append(Transition(state, action, reward, next_state, done))
+        self.buffer.append(
+            Transition(state, action, reward, next_state, done, log_prob)
+        )
         if len(self.buffer) > self.max_len:
             self.buffer.pop(0)
 
@@ -70,7 +83,7 @@ class TrajectoryBuffer:
         collected = np.array([attr(t) for t in self.buffer], dtype=dtype)
         return collected
 
-    def get_batch(self) -> Tuple[np.ndarray, ...]:
+    def get_batch(self) -> Batch:
         """
         Convert the stored transitions into arrays suitable for training.
         Returns a tuple: (states, actions, rewards, next_states, dones)
@@ -81,5 +94,6 @@ class TrajectoryBuffer:
         rewards = self.collect_array(attrgetter("reward"), np.dtype(np.float32))
         next_states = self.collect_array(attrgetter("next_state"), np.dtype(np.float32))
         dones = self.collect_array(attrgetter("done"), np.dtype(np.bool))
+        log_probs = self.collect_array(attrgetter("log_prob"), np.dtype(np.float32))
 
-        return states, actions, rewards, next_states, dones
+        return Batch(states, actions, rewards, next_states, dones, log_probs)
