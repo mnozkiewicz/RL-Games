@@ -302,7 +302,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         with open(os.path.join(path, "config.json"), "w") as f:
             json.dump(config, f)
 
-        torch.save(self.model.to("cpu").state_dict(), os.path.join(path, "model.pth"))
+        torch.save(self.model.state_dict(), os.path.join(path, "model.pth"))
 
     @classmethod
     def load_model(cls, path: str, device: str = "cpu") -> ActorCriticAgent:

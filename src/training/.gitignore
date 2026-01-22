@@ -6,4 +6,5 @@
 *.pt
 *.pth
 *_controller
+weights/**
 
