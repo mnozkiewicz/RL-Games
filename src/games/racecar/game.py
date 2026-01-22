@@ -46,6 +46,9 @@ class RacecarGame(BaseGame):
             self.reset()
 
     def step(self, action_label: int) -> float:
+        if action_label == 4:
+            action_label = -1
+
         self._score += 1
         self.car.move(action_label)
         event = self.track.check_car_collision(*self.car.pos())
@@ -99,7 +102,7 @@ class RacecarGame(BaseGame):
 
     @property
     def number_of_moves(self) -> int:
-        return 4
+        return 5
 
     def score(self) -> int:
         return self._score

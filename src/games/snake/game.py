@@ -72,7 +72,7 @@ class SnakeGame(BaseGame):
 
     @property
     def number_of_moves(self) -> int:
-        return 4
+        return 5
 
     def name(self) -> str:
         return "SNAKE"
@@ -89,6 +89,9 @@ class SnakeGame(BaseGame):
     def step(self, action_label: int) -> float:
         if not self._running:
             return SnakeGame.DEATH_REWARD
+
+        if action_label == 4:
+            action_label = -1
 
         self._current_state_index += 1
 

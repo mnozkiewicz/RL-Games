@@ -4,4 +4,4 @@
 ☐ Implement DQN agent
 ☐ Add dvc for handling models and assets
 ☐ Add mlflow for experiments
-☐ More structured model savings
+☐ Add ability to choose the agent

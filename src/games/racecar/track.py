@@ -116,4 +116,4 @@ class CarTrack:
         return self._track_path
 
     def init_car_params(self) -> Tuple[float, float, int]:
-        return (0.55, 0.4, 36)
+        return (0.2, 0.25, 27)

@@ -98,6 +98,9 @@ class TetrisGame(BaseGame):
         return count
 
     def step(self, action_label: int) -> float:
+        if action_label == 4:
+            action_label = -1
+
         shape = self.shape_manager.current_shape()
         shape.move(action=action_label)
         collision = self._detect_collision(shape, action_label)
@@ -170,7 +173,7 @@ class TetrisGame(BaseGame):
 
     @property
     def number_of_moves(self) -> int:
-        return 4
+        return 5
 
     def score(self) -> int:
         return self._score
