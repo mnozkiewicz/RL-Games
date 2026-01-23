@@ -1,5 +1,4 @@
-from torch import optim
-from ..agents.policy_gradient import ActorCriticAgent
+from ..agents import create_agent
 from ..agents.base_agent import BaseAgent
 from ..games.base_game import BaseGame
 from ..games.registry import create_game_engine, GAME_REGISTRY
@@ -102,11 +101,11 @@ def train(
                     past_rewards, past_scores, window_size, current_dir, i_episode + 1
                 )
 
-        if (i_episode + 1) % 500 == 0:
+        if (i_episode + 1) % 50 == 0:
             path = current_dir / f"weights/learning_{i_episode}"
             agent.save_model(str(path))
 
-    agent.save_model(str(Path("weights") / f"{game.name()}_controller"))
+    agent.save_model(str(Path("weights") / f"{game.name()}"))
 
     return agent
 
@@ -129,13 +128,20 @@ def main() -> None:
         help="Should agent make choices based on a game image or a processed_state.",
     )
     parser.add_argument(
+        "--agent",
+        type=str,
+        default="ppo",
+        choices=["ppo", "actor_critic"],
+        help="Choose rl algorithm",
+    )
+    parser.add_argument(
         "--episodes", type=int, default=1000, help="Number of training episodes."
     )
     parser.add_argument(
         "--max-steps", type=int, default=3000, help="Maximum steps per episode."
     )
     parser.add_argument(
-        "--lr", type=float, default=1e-4, help="Learning rate for optimizer."
+        "--lr", type=float, default=3e-4, help="Learning rate for optimizer."
     )
     parser.add_argument(
         "--batch-size", type=int, default=64, help="Training batch size."
@@ -160,21 +166,13 @@ def main() -> None:
     game = create_game_engine(args.game, args.input_type, infinite=False)
 
     # Create game agent
-    actor_critic_agent = ActorCriticAgent(
-        state_space_shape=game.state().shape,
-        action_space_size=game.number_of_moves,
-        batch_size=args.batch_size,
-        hidden_layer_sizes=(256, 64),
-        discount_factor=0.99,
-        device=args.device,
-        optimizer=optim.AdamW,
-        optimizer_kwargs={"lr": args.lr},
-        input_type=args.input_type,
+    agent = create_agent(
+        args.agent, game.state().shape, game.number_of_moves, args.input_type
     )
 
     # Run training
     train(
-        actor_critic_agent,
+        agent,
         game,
         num_episodes=args.episodes,
         max_steps_per_episode=args.max_steps,

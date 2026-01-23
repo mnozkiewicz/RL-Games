@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 import numpy as np
-from typing import Optional, Any, Type, Tuple, List, Dict, Union, Literal
+from typing import Any, Tuple, List, Dict, Union, Literal
 from .trajectory_buffer import TrajectoryBuffer
 from ..base_agent import BaseAgent
 
@@ -26,8 +26,6 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         discount_factor: float = 0.99,
         entropy_coef: float = 0.01,
         device: str = "cpu",
-        optimizer: Optional[Type[optim.Optimizer]] = None,
-        optimizer_kwargs: Optional[dict[str, Any]] = None,
         input_type: Literal["raw_pixels", "processed_state"] = "processed_state",
     ) -> None:
         super().__init__()
@@ -73,14 +71,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         self.trajectory_buffer = TrajectoryBuffer(batch_size)
 
         # Set optimizer
-        if optimizer_kwargs is None:
-            optimizer_kwargs = {}
-
-        self.optimizer: optim.Optimizer
-        if optimizer is None:
-            self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
-        else:
-            self.optimizer = optimizer(self.model.parameters(), **optimizer_kwargs)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=3e-4)
 
     def _create_networks(
         self, input_size: int, hidden_layer_sizes: Tuple[int, ...], output_size: int
@@ -288,7 +279,7 @@ class ActorCriticAgent(BaseAgent, nn.Module):
         - config.json : network architecture and state/action dimensions
         - model.pth   : PyTorch model weights
         """
-        path = f"{path}_{self.input_type}"
+        path = f"{path}_actor_critic_{self.input_type}"
         print(f"Saving model to {path}...")
         os.makedirs(path, exist_ok=True)
 

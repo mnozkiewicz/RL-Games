@@ -17,7 +17,6 @@ class PPOAgent(BaseAgent, nn.Module):
         state_space_shape: Union[Tuple[int, ...], int],
         action_space_size: int,
         hidden_layer_sizes: Tuple[int, ...] = (256, 256),
-        lr: float = 3e-4,
         discount_factor: float = 0.99,
         gae_lambda: float = 0.95,
         clip_param: float = 0.2,
@@ -62,7 +61,7 @@ class PPOAgent(BaseAgent, nn.Module):
                 state_space_shape, action_space_size
             ).to(device)
 
-        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=3e-4, eps=1e-5)
         self.trajectory_buffer = TrajectoryBuffer(max_len=buffer_size)
 
     def _create_networks(
@@ -204,7 +203,7 @@ class PPOAgent(BaseAgent, nn.Module):
         """
         deltas = rewards + self.discount_factor * next_values * masks - values
         advantages = torch.zeros_like(deltas)
-        gae = torch.Tensor(0.0)
+        gae = torch.tensor(0.0)
 
         for i in reversed(range(len(rewards))):
             gae = deltas[i] + (self.discount_factor * self.gae_lambda * masks[i] * gae)
@@ -249,8 +248,6 @@ class PPOAgent(BaseAgent, nn.Module):
         indices = torch.randperm(dataset_size)
 
         for _ in range(self.ppo_epochs):
-            np.random.shuffle(indices)
-
             for start in range(0, dataset_size, self.mini_batch_size):
                 end = start + self.mini_batch_size
                 idx = indices[start:end]
@@ -291,6 +288,8 @@ class PPOAgent(BaseAgent, nn.Module):
 
                 self.optimizer.zero_grad()
                 total_loss.backward()
+
+                nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
                 self.optimizer.step()
 
     def set_eval_mode(self) -> None:
@@ -308,7 +307,7 @@ class PPOAgent(BaseAgent, nn.Module):
         - config.json : network architecture and state/action dimensions
         - model.pth   : PyTorch model weights
         """
-        path = f"{path}_{self.input_type}"
+        path = f"{path}_ppo_{self.input_type}"
         print(f"Saving model to {path}...")
         os.makedirs(path, exist_ok=True)
 

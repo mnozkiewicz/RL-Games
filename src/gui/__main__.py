@@ -10,7 +10,7 @@ from .gui_config import GUIConfig
 
 # Players and agents
 from ..players import HumanPlayer, AIPlayer
-from ..agents.policy_gradient import ActorCriticAgent
+from ..agents import create_agent, load_pretrained_model
 
 # Game object factory
 from ..games.registry import create_game_and_renderer, GAME_REGISTRY
@@ -43,6 +43,13 @@ def main() -> None:
         default="ai",
         choices=["human", "ai"],
         help="Control type: human or AI.",
+    )
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default="ppo",
+        choices=["ppo", "actor_critic"],
+        help="Choose rl algorithm",
     )
 
     parser.add_argument(
@@ -90,16 +97,16 @@ def main() -> None:
         player = HumanPlayer(game=game, key_map=key_map)
     else:
         if args.pretrained:
-            model_path = f"weights/{game.name()}_controller_{args.input_type}"
+            model_path = f"weights/{game.name()}_{args.agent}_{args.input_type}"
             if not Path(model_path).exists():
                 raise ValueError(f"There is no model in path {model_path}")
             print(f"Loading AI model from {model_path}...")
-            agent = ActorCriticAgent.load_model(model_path)
+            agent = load_pretrained_model(args.agent, model_path, "cpu")
         else:
-            agent = ActorCriticAgent(
+            agent = create_agent(
+                args.agent,
                 game.state().shape,
                 game.number_of_moves,
-                hidden_layer_sizes=(64, 64),
                 input_type=args.input_type,
             )
 

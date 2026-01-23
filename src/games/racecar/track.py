@@ -25,8 +25,11 @@ class CarTrack:
         self._mid_points_path = get_current_dir_path() / "tracks/checkpoints2.json"
 
         self._track_board = self._read_board()
-        self._checkpoints = self._read_mid_points()
+        self._checkpoints, self.angles = self._read_checkpoints()
         self._mid_point_lengths = np.linalg.norm(self._checkpoints, axis=1) ** 2
+
+        # Car progress tracking
+        self._last_checkpoint = -1
         self._next_checkpoint = 0
 
     def _read_board(self) -> np.ndarray:
@@ -43,16 +46,33 @@ class CarTrack:
 
         return greyscale
 
-    def _read_mid_points(self) -> np.ndarray:
+    def _read_checkpoints(self) -> Tuple[np.ndarray, np.ndarray]:
         with open(self._mid_points_path, "r") as f:
-            mid_points = json.load(f)
-        return np.array(mid_points)
+            checkpoint_json = json.load(f)
+            mid_points: list[list[int]] = checkpoint_json["checkpoints"]
+            angles: list[int] = checkpoint_json["angles"]
+
+        starting_checkpoint = np.random.randint(0, len(mid_points))
+        # starting_checkpoint = 0
+
+        for _ in range(starting_checkpoint):
+            mid_points.append(mid_points.pop(0))
+            angles.append(angles.pop(0))
+
+        return np.array(mid_points), np.array(angles)
 
     def _which_checkpoint(self, x: int, y: int) -> int:
         point = np.array([x, y])
         return np.argmin(
             -2 * (self._checkpoints @ point.T) + self._mid_point_lengths
         ).item()
+
+    def distance_to_checkpoint(self, x: float, y: float) -> float:
+        checkpoint_x, checkpoint_y = self._checkpoints[self._next_checkpoint]
+
+        checkpoint_x /= self._track_board.shape[1]
+        checkpoint_y /= self._track_board.shape[0]
+        return float((x - checkpoint_x) ** 2 + (y - checkpoint_y) ** 2)
 
     def check_car_collision(self, x: float, y: float) -> Event:
         y_pixel = int(y * self._track_board.shape[0])
@@ -62,18 +82,25 @@ class CarTrack:
             case 0:
                 return Event.OUT_OF_TRACK
             case 1 | 3:
-                checkpoint_number = self._which_checkpoint(x_pixel, y_pixel)
-                if checkpoint_number == self._next_checkpoint:
-                    self._next_checkpoint += 1
-                    return Event.NEXT_CHECKPOINT
+                cur_checkpoint = self._which_checkpoint(x_pixel, y_pixel)
+                if cur_checkpoint == self._last_checkpoint:
+                    return Event.NOTHING
 
-                if (
-                    self._next_checkpoint == len(self._checkpoints)
-                    and checkpoint_number == 0
-                ):
+                if cur_checkpoint != self._next_checkpoint:
+                    self._last_checkpoint = cur_checkpoint
+                    return Event.WRONG_CHECHKPOINT
+
+                if self._next_checkpoint == 0 and self._last_checkpoint >= 0:
+                    # print("FULL circle done")
                     return Event.FULL_CIRCLE
 
-                return Event.WRONG_CHECHKPOINT
+                self._next_checkpoint = (self._next_checkpoint + 1) % len(
+                    self._checkpoints
+                )
+                # print(self._last_checkpoint, cur_checkpoint, self._next_checkpoint)
+                self._last_checkpoint = cur_checkpoint
+                return Event.NEXT_CHECKPOINT
+
             case _:
                 return Event.NOTHING
 
@@ -81,7 +108,8 @@ class CarTrack:
         self,
         x: float,
         y: float,
-        num_rays: int = 16,
+        angle: int,
+        num_rays: int = 40,
     ) -> np.ndarray:
         h, w = self._track_board.shape
         y0 = int(y * h)
@@ -92,23 +120,29 @@ class CarTrack:
         angles = np.linspace(0, 2 * np.pi, num_rays, endpoint=False)
         distances = np.zeros(num_rays, dtype=np.float32)
 
+        shift = angle // (360 // num_rays)
+
         for i, angle in enumerate(angles):
             dx = np.cos(angle)
             dy = np.sin(angle)
+
+            angle_pos = (i + shift) % num_rays
 
             for d in range(1, max_distance):
                 xi = int(x0 + dx * d)
                 yi = int(y0 + dy * d)
 
                 if xi < 0 or xi >= w or yi < 0 or yi >= h:
-                    distances[i] = d
+                    distances[angle_pos] = d / max_distance
                     break
 
                 if self._track_board[yi, xi] == 0:
-                    distances[i] = d
+                    distances[angle_pos] = d / max_distance
                     break
+                # if self._track_board[yi, xi] == 1 or self._track_board[yi, xi] == 3:
+                #     distances[angle_pos] = d
             else:
-                distances[i] = max_distance
+                distances[angle_pos] = 1.0
 
         return distances
 
@@ -116,4 +150,7 @@ class CarTrack:
         return self._track_path
 
     def init_car_params(self) -> Tuple[float, float, int]:
-        return (0.2, 0.25, 27)
+        x_start, y_start = self._checkpoints[0]
+        x_start /= self._track_board.shape[0]
+        y_start /= self._track_board.shape[1]
+        return (x_start, y_start, self.angles[0])
